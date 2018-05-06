@@ -1,0 +1,26 @@
+[user]
+	name = Othmane AIT EL CADI
+	email = othmane.aitelcadi@wakanda.io
+[merge]
+	tool = meld
+[mergetool "meld"]
+	#cmd = p4merge "\"$PWD/$BASE"\" "\"$PWD/$LOCAL"\" "\"$PWD/$REMOTE"\" "\"$PWD/$MERGED"\"
+    cmd = meld --auto-merge \"$LOCAL\" \"$BASE\" \"$REMOTE\" --output \"$MERGED\" --label \"MERGE (REMOTE BASE MY)\"
+	trustExitCode = false
+[mergetool]
+	keepBackup = false
+	keepTemporaries = false
+	prompt = false
+[diff]
+	tool = meld
+[difftool "meld"]
+	#cmd = p4merge "\"$LOCAL\"" "\"$REMOTE\""
+    cmd = meld \"$LOCAL\" \"$REMOTE\" --label \"DIFF (ORIGINAL MY)\"
+	prompt = false
+[core]
+	editor = emacs
+	excludesfile = ~/.config/git/gitignore
+[commit]
+	template = ~/.config/git/gitcommitmsg.txt
+[alias]
+	tree = log --graph --full-history --all --color --date=short --pretty=format:\"%Cred%x09%h %Creset%ad%Cblue%d %Creset %s %C(bold)(%an)%Creset\"

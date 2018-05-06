@@ -1,0 +1,39 @@
+background        no
+out_to_console 	  yes
+own_window 	  no
+out_to_x	  no
+update_interval	  1
+total_run_times	  0
+short_units	  yes
+pad_percents	  3
+max_text_width 0
+if_up_strictness address
+override_utf8_locale no
+
+TEXT
+[
+
+  ## Show date.
+  [
+  {"full_text":"${time %A, %b %d, %H:%M} ", "color":"\#d3d7cf"},
+
+  ## Packages update count (execute every 15 mins)
+  { "full_text" : " PKG UPT ${execi 900 pacman -Qu | wc -l} " , "urgent": true },
+
+  ## IP Address
+  { "full_text" : " IP ${addr enp0s25} " , "color" : "\#87c7bf" },
+
+  ## RAM Info
+  { "full_text" : " MEM ${mem} " , "color" : "\#87c7bf" },
+
+  ## Disk Space
+  { "full_text" : " DISK ${fs_used /} / ${fs_size /} " , "color" : "\#87c7bf"},
+
+  ## Show Volume
+  {"full_text" : " VOL ${exec cat /home/dartzon/.dotfiles/conky/outfiles/sounddevice-volume.out} - ${exec cat /home/dartzon/.dotfiles/conky/outfiles/sounddevice.out} ", "color":"\#${exec cat /home/dartzon/.dotfiles/conky/outfiles/sounddevice-mute.out}"},
+  
+  ## Show the user (fetch username every 4 hours)
+  {"full_text": " ${execi 14400 echo $USER}@${nodename} ", "color":"\#f57900"}
+],
+
+

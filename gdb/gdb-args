@@ -1,0 +1,3 @@
+list
+python exec(open("/home/dartzon/.dotfiles/gdb/Pretty-Printers/XBOX_VString.py").read())
+run

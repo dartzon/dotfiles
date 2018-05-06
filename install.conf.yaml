@@ -1,0 +1,23 @@
+- defaults:
+    link:
+      create: true
+      force: true
+
+- clean: ['~']
+
+- link:
+    ~/bin: bin/
+    ~/.bashrc: profile
+    ~/.config/conky: conky/
+    ~/.config/git: gitconf/
+    ~/.config/i3: i3/
+    ~/.config/systemd/user/mbsync.service: mail/mbsync.service
+    ~/.config/systemd/user/mbsync.timer: mail/mbsync.timer
+    ~/.emacs.d: emacs.d/
+    ~/.gitconfig: gitconf/gitconfig
+    ~/.profile: profile
+    ~/.Xresources: urxvt/Xresources
+    ~/.config/rofi: rofi/
+
+- shell:
+  - [git submodule update --init --recursive, Installing submodules]

@@ -1,0 +1,55 @@
+# =======================================================================
+#
+# <TYPE>(<SCOPE>): <SUBJECT> (Max 50 char)
+#
+# Allowed values for <TYPE>
+#
+#    feature        (new feature)
+#    fix            (bug fix)
+#    refactor       (refactoring production code)
+#    optimization   (performance)
+#    docs           (changes to documentation)
+#    style          (formatting, missing semi colons, etc; no code change)
+#    test           (adding or refactoring tests; no production code change)
+#    empty          (empty commit)
+#
+# Example values for <SCOPE>
+#
+#     driver
+#     connector
+#     tests
+#     kernel
+#
+# - Use the imperative, present tense: “change” not “changed” nor “changes”
+# - Do not end the subject line with a period
+#
+# =======================================================================
+#
+# <MESSAGE BODY> (Try to limit each line to a maximum of 80 characters)
+#
+# - Explain why this change is being made
+# - Explain what and why vs. how
+# - Include motivation for the change and contrasts with previous behavior
+# - Use the imperative, present tense: “change” not “changed” nor “changes”
+# - Use multiple lines with "-" for bullet points in body
+#
+# =======================================================================
+#
+# <TICKETS AND LINKS>
+#
+# - Provide links or keys to any relevant tickets, articles or other resources
+# - Example: Trello: https://trello.com/link-to-card
+#            Gitlab: issue #123
+#
+# =======================================================================
+
+# <TYPE>(<SCOPE>): <SUBJECT>
+
+
+# <MESSAGE BODY>
+
+
+# <TICKETS AND LINKS>
+
+
+# --- COMMIT END ---

@@ -38,8 +38,7 @@ floating_modifier $mod
 mouse_warping none
 
 # start a terminal
-bindsym $mod+Return exec gnome-terminal
-bindsym $mod+F1 exec gnome-terminal
+bindsym $mod+Return exec urxvt
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -254,13 +253,13 @@ bar
 
     colors
     {
-	statusline	#999999
-	background	#002833
+        statusline	#999999
+        background	#002833
 
-        # Colors		border      backgr.     text
-	focused_workspace	$white	 	$white		$black
+        # Colors            border      backgr.     text
+	    focused_workspace	$white	 	$white		$black
         active_workspace	#073642 	#073642 	#696f89
-        inactive_workspace	#073642 	#073642         $white
+        inactive_workspace	#073642 	#073642     $white
         urgent_workspace  	$orange		$orange		$dark
     }
 }

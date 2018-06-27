@@ -6,9 +6,9 @@
 - clean: ['~']
 
 - link:
-    ~/bin: bin/
     ~/.bashrc: profile
     ~/.config/conky: conky/
+    ~/.config/dunst: dunst/
     ~/.config/git: gitconf/
     ~/.config/i3: i3/
     ~/.config/systemd/user/mbsync.service: mail/mbsync.service
@@ -21,3 +21,5 @@
 
 - shell:
   - [git submodule update --init --recursive, Installing submodules]
+  - [systemctl --user enable mbsync.timer;systemctl --user start mbsync.timer, Starting mbsync service]
+  - mkdir ~/.config/conky/outfiles/; touch ~/.config/conky/outfiles/sounddevice-volume.out; touch ~/.config/conky/outfiles/sounddevice.out; touch ~/.config/conky/outfiles/sounddevice-mute.out

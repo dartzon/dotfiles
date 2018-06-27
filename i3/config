@@ -37,16 +37,10 @@ floating_modifier $mod
 # Prevent the mouse cursor from jumping to the other window when switched to.
 mouse_warping none
 
-# start a terminal
-bindsym $mod+Return exec urxvt
-
 # kill focused window
 bindsym $mod+Shift+q kill
 bindsym $mod+Escape kill
 
-# start dmenu (a program launcher)
-#bindsym $mod+d exec dmenu_run
-bindsym $mod+d exec rofi -show run
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
@@ -94,40 +88,40 @@ bindsym $mod+q focus parent
 workspace_auto_back_and_forth yes
 
 # Name workspaces
-set $tag1  "1:[I. web]"
-set $tag2  "2:[II. emacs]"
-set $tag3  "3:[III. term]"
-set $tag4  "4:[IV]"
+set $tag1  "1:  "
+set $tag2  "2:  "
+set $tag3  "3:  "
+set $tag4  "4:  "
 set $tag5  "5:[V]"
 set $tag6  "6:[VI]"
 set $tag7  "7:[VII]"
-set $tag8  "8:[VIII]"
-set $tag9  "9:[IX]"
-set $tag10 "10:[X]"
+set $tag8  "8:  "
+set $tag9  "9:  "
+set $tag10 "10:  "
 
 # switch to workspace
-bindsym $mod+$vernum+KP_1 workspace $tag1
-bindsym $mod+$vernum+KP_2 workspace $tag2
-bindsym $mod+$vernum+KP_3 workspace $tag3
-bindsym $mod+$vernum+KP_4 workspace $tag4
-bindsym $mod+$vernum+KP_5 workspace $tag5
-bindsym $mod+$vernum+KP_6 workspace $tag6
-bindsym $mod+$vernum+KP_7 workspace $tag7
-bindsym $mod+$vernum+KP_8 workspace $tag8
-bindsym $mod+$vernum+KP_9 workspace $tag9
-bindsym $mod+$vernum+KP_0 workspace $tag10
+bindsym $mod+1 workspace $tag1
+bindsym $mod+2 workspace $tag2
+bindsym $mod+3 workspace $tag3
+bindsym $mod+4 workspace $tag4
+bindsym $mod+5 workspace $tag5
+bindsym $mod+6 workspace $tag6
+bindsym $mod+7 workspace $tag7
+bindsym $mod+8 workspace $tag8
+bindsym $mod+9 workspace $tag9
+bindsym $mod+0 workspace $tag10
 
 # move focused container to workspace
-bindsym $mod+Shift+$vernum+KP_End move container to workspace $tag1
-bindsym $mod+Shift+$vernum+KP_Down move container to workspace $tag2
-bindsym $mod+Shift+$vernum+KP_Next move container to workspace $tag3
-bindsym $mod+Shift+$vernum+KP_Left move container to workspace $tag4
-bindsym $mod+Shift+$vernum+KP_Begin move container to workspace $tag5
-bindsym $mod+Shift+$vernum+KP_Right move container to workspace $tag6
-bindsym $mod+Shift+$vernum+KP_Home move container to workspace $tag7
-bindsym $mod+Shift+$vernum+KP_Up move container to workspace $tag8
-bindsym $mod+Shift+$vernum+KP_Prior move container to workspace $tag9
-bindsym $mod+Shift+$vernum+KP_Insert move container to workspace $tag10
+bindsym $mod+Shift+1 move container to workspace $tag1
+bindsym $mod+Shift+2 move container to workspace $tag2
+bindsym $mod+Shift+3 move container to workspace $tag3
+bindsym $mod+Shift+4 move container to workspace $tag4
+bindsym $mod+Shift+5 move container to workspace $tag5
+bindsym $mod+Shift+6 move container to workspace $tag6
+bindsym $mod+Shift+7 move container to workspace $tag7
+bindsym $mod+Shift+8 move container to workspace $tag8
+bindsym $mod+Shift+9 move container to workspace $tag9
+bindsym $mod+Shift+0 move container to workspace $tag10
 
 # Make programs appear in certain workspaces
 assign [class="^Emacs"] $tag2
@@ -141,7 +135,7 @@ bindsym $mod+Shift+r restart
 #############################################
 # Modes
 #############################################
-set $sysmenu "system:  [p]oweroff | [r]eboot | [l]ogout | [s]uspend | [h]ibernate"
+set $sysmenu "system:   [p]oweroff    [r]eboot    [l]ogout    [s]uspend    [h]ibernate"
 bindsym $mod+Delete mode $sysmenu
 
 mode $sysmenu
@@ -183,16 +177,12 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# Rotate the left screen
-exec --no-startup-id xrandr --output DVI-I-0 --primary --mode 1920x1080 --rate 60 --pos 1080x420 --output DVI-D-0 --rotate left --mode 1920x1080 --rate 60 --pos 0x0 --left-of DVI-I-0
-
 # load the wallpaper
-exec --no-startup-id feh --bg-scale /home/dartzon/Pictures/Wallpapers/Poly-Lakeside.jpg
+exec --no-startup-id feh --bg-scale ~/.dotfiles/wallpapers/archlinux-wallpaper.png
 
-# activate the multimedia keys
 # Pulse Audio controls
 
-exec --no-startup-id paswitch alsa_output.pci-0000_01_00.1.hdmi-stereo-extra1
+exec --no-startup-id paswitch alsa_output.pci-0000_00_1f.3.analog-stereo
 
 # increase sound volume
 bindsym XF86AudioRaiseVolume exec --no-startup-id "pactl set-sink-volume @DEFAULT_SINK@ +5%;echo $(pactl list sinks | grep -A7 \\"Name:$(pactl info | grep -i \\"Default Sink\\" | cut -d':' -f2)\\" | tail -1 | cut -d'/' -f2) > $HOME/.config/conky/outfiles/sounddevice-volume.out"
@@ -200,13 +190,18 @@ bindsym XF86AudioRaiseVolume exec --no-startup-id "pactl set-sink-volume @DEFAUL
 bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-volume @DEFAULT_SINK@ -5%;echo $(pactl list sinks | grep -A7 \\"Name:$(pactl info | grep -i \\"Default Sink\\" | cut -d':' -f2)\\" | tail -1 | cut -d'/' -f2) > $HOME/.config/conky/outfiles/sounddevice-volume.out"
 # mute sound
 bindsym XF86AudioMute exec --no-startup-id "pactl set-sink-mute @DEFAULT_SINK@ toggle;if [ $(pactl list sinks | grep -A6 \\"Name:$(pactl info | grep -i \\"Default Sink\\" | cut -d':' -f2)\\" | tail -1 | cut -d':' -f2 | sed -e 's/^[ \t]*//' | grep -i yes | wc -l) -eq 0 ]; then echo 87c7bf > $HOME/.config/conky/outfiles/sounddevice-mute.out; else echo f57900 > $HOME/.config/conky/outfiles/sounddevice-mute.out; fi"
+# mute microphone
+bindsym XF86AudioMicMute exec --no-startup-id "pactl set-source-mute @DEFAULT_SOURCE@ toggle"
+
 # switch audio source
-bindsym $mod+Shift+F10 exec --no-startup-id "paswitch alsa_output.pci-0000_00_1b.0.analog-stereo;echo JACK > $HOME/.config/conky/outfiles/sounddevice.out"
+bindsym $mod+Shift+F10 exec --no-startup-id "paswitch alsa_output.pci-0000_00_1f.3.analog-stereo;echo INTERN > $HOME/.config/conky/outfiles/sounddevice.out"
 bindsym $mod+Shift+F11 exec --no-startup-id "paswitch alsa_output.pci-0000_01_00.1.hdmi-stereo-extra1;echo HDMI > $HOME/.config/conky/outfiles/sounddevice.out"
 bindsym $mod+Shift+F12 exec --no-startup-id "paswitch $(pactl list sinks | grep Name | grep usb | head -n1 | cut -d':' -f2);echo USB > $HOME/.config/conky/outfiles/sounddevice.out"
 
-# Activate the sound
-exec --no-startup-id start-pulseaudio-x11
+# Screen backlight control
+
+bindsym XF86MonBrightnessUp exec --no-startup-id "light -A 5"
+bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 
 #..........
 # Look
@@ -249,24 +244,30 @@ bar
     strip_workspace_numbers yes
     
     tray_output none
-    output DVI-I-0
 
     colors
     {
-        statusline	#999999
-        background	#002833
+        statusline  #999999
+        background  #002833
 
         # Colors            border      backgr.     text
-	    focused_workspace	$white	 	$white		$black
-        active_workspace	#073642 	#073642 	#696f89
-        inactive_workspace	#073642 	#073642     $white
-        urgent_workspace  	$orange		$orange		$dark
+        focused_workspace   $white      $white      $black
+        active_workspace    #073642     #073642     #696f89
+        inactive_workspace  #073642     #073642     $white
+        urgent_workspace    $orange     $orange     $dark
     }
 }
 
+# Applications auto-startup after login
+exec --no-startup-id start-pulseaudio-x11
+exec --no-startup-id udiskie
+
 # Applications startup key binds
 # start emacs
-bindsym $mod+F2 exec emacs
-bindsym $mod+End exec i3lock -i ~/Pictures/Wallpapers/NasaSpaceShips.png -t
+# start a terminal
+bindsym $mod+Return exec urxvt
+bindsym $mod+d exec rofi -show drun
+bindsym XF86Launch1 exec --no-startup-id onboard
+bindsym $mod+End exec i3lock-wrapper
 bindsym Print exec gnome-screenshot
-bindsym XF86Calculator exec gnome-calculator
+bindsym XF86Launch2 exec emacs

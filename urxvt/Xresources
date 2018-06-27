@@ -37,7 +37,7 @@ Xcursor.size: 16
 
 URxvt.perl-ext-common:   default,clipboard,url-select,keyboard-select,matcher
 
-URxvt*borderless:        1
+URxvt*borderless:        true
 URxvt*buffered:          true
 URxvt*cursorBlink:       true
 URxvt*loginShell:        false
@@ -47,7 +47,7 @@ URxvt*scrollBar_right:   false
 URxvt*scrollTtyKeypress: true
 URxvt*scrollTtyOutput:   false
 URxvt*scrollWithBuffer:  true
-URxvt*termName:          rxvt-unicode
+URxvt*termName:          rxvt-unicode-256color
 URxvt*transparent:       false
 URxvt.font:              xft:IBM 3270:medium:size=15
 URxvt.keysym.M-Escape:   perl:keyboard-select:activate

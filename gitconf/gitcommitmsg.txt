@@ -15,10 +15,9 @@
 #
 # Example values for <SCOPE>
 #
-#     driver
-#     connector
-#     tests
-#     kernel
+#     mem manager
+#     file parser
+#     DB module
 #
 # - Use the imperative, present tense: “change” not “changed” nor “changes”
 # - Do not end the subject line with a period
@@ -39,7 +38,7 @@
 #
 # - Provide links or keys to any relevant tickets, articles or other resources
 # - Example: Trello: https://trello.com/link-to-card
-#            Gitlab: issue #123
+#            Github: issue #123
 #
 # =======================================================================
 

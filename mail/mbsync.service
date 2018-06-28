@@ -4,10 +4,11 @@
 Description=Personal gmail synchronization service
 RefuseManualStart=no
 RefuseManualStop=yes
+After=network.target network-online.target dbus.socket
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash ~/.dotfiles/mail/fetchmail.sh
+ExecStart=/bin/bash %h/.dotfiles/mail/fetchmail.sh
 StandardOutput=syslog
 StandardError=syslog
 KillMode=process

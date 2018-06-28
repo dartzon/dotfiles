@@ -6,7 +6,7 @@ Host imap.gmail.com
 User dartzon@gmail.com
 # PassCmd "python2 ~/.mail/.getpwd.py"
 # To store the password in an encrypted file use PassCmd instead of Pass
-PassCmd "gpg2 -q --for-your-eyes-only --no-tty -d ~/.passwords/dartzon@gmail-pwd.gpg"
+PassCmd "pass email/dartzon@gmail.com"
 AuthMechs LOGIN
 # --------------------------------------------------------------------------------
 # --------------------------------------------------------------------------------

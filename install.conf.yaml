@@ -13,7 +13,7 @@
     ~/.config/i3: i3/
     ~/.config/systemd/user/mbsync.service: mail/mbsync.service
     ~/.config/systemd/user/mbsync.timer: mail/mbsync.timer
-    ~/.emacs.d: emacs.d/
+    ~/.emacs.d: emacs/
     ~/.gitconfig: gitconf/gitconfig
     ~/.profile: profile
     ~/.Xresources: urxvt/Xresources

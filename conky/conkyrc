@@ -19,7 +19,7 @@ TEXT
   {"full_text":" \uf017   ${time %A, %b %d, %H:%M} ", "color":"\#d3d7cf"},
 
   ## New mail
-  { "full_text" : " ${if_match ${new_mails ${HOME}/.mail/dartzon@gmail.com/INBOX/} > 0}\uf0e0${else}\uf2b6${endif}   ${new_mails ${HOME}/.mail/dartzon@gmail.com/INBOX/} ",
+  { "full_text" : " ${if_match ${new_mails ${HOME}/.mail/dartzon@gmail.com/INBOX/} > 0}\uf0e0${else}\uf2b6${endif}  ${new_mails ${HOME}/.mail/dartzon@gmail.com/INBOX/} ",
     "color" : "${if_match ${new_mails ${HOME}/.mail/dartzon@gmail.com/INBOX/} > 0}\#f57900${else}\#48f442${endif}" },
 
   ## IP Address
@@ -31,34 +31,35 @@ TEXT
     "color" : "${if_match ${exec bt-adapter -l | wc -l} > 1}\#87c7bf${else}\#f57900${endif}" },
 
   ## Battery status
-  { "full_text" : " ${if_match ${battery_percent BAT0} == 100}\
+  { "full_text" : " ${if_match ${battery_percent BAT0} >= 75}\
 \uf240\
 ${else}\
-${if_match ${battery_percent BAT0} >= 75}\
+${if_match ${battery_percent BAT0} >= 50}\
 \uf241\
 ${else}\
-${if_match ${battery_percent BAT0} >= 50 }\
+${if_match ${battery_percent BAT0} >= 25}\
 \uf242\
 ${else}\
-${if_match ${battery_percent BAT0} >= 25 }\
+${if_match ${battery_percent BAT0} >= 5}\
 \uf243\
 ${else}\
 \uf244\
 ${endif}${endif}${endif}${endif}   ${battery_percent BAT0}% - \
-${if_match ${battery_percent BAT1} == 100}\
+${if_match ${battery_percent BAT1} >= 75}\
 \uf240\
 ${else}\
-${if_match ${battery_percent BAT1} >= 75}\
+${if_match ${battery_percent BAT1} >= 50}\
 \uf241\
 ${else}\
-${if_match ${battery_percent BAT1} >= 50 }\
+${if_match ${battery_percent BAT1} >= 25}\
 \uf242\
 ${else}\
-${if_match ${battery_percent BAT1} >= 25 }\
+${if_match ${battery_percent BAT1} >= 5}\
 \uf243\
 ${else}\
 \uf244\
-${endif}${endif}${endif}${endif}   ${battery_percent BAT1}% ", "color" : "\#87c7bf" },
+${endif}${endif}${endif}${endif}   ${battery_percent BAT1}% ",
+"color" : "${if_match ${battery_percent BAT0} <= 5}${if_match ${battery_percent BAT1} <= 5}\#f57900${endif}${else}\#87c7bf${endif}" },
 
   ## RAM Info
   { "full_text" : " \uf538   ${mem} " , "color" : "\#87c7bf" },

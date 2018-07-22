@@ -92,9 +92,9 @@ set $tag1  "1:  "
 set $tag2  "2:  "
 set $tag3  "3:  "
 set $tag4  "4:  "
-set $tag5  "5:[V]"
+set $tag5  "5:  "
 set $tag6  "6:[VI]"
-set $tag7  "7:[VII]"
+set $tag7  "7:  "
 set $tag8  "8:  "
 set $tag9  "9:  "
 set $tag10 "10:  "
@@ -200,8 +200,8 @@ bindsym $mod+Shift+F12 exec --no-startup-id "paswitch $(pactl list sinks | grep 
 
 # Screen backlight control
 
-bindsym XF86MonBrightnessUp exec --no-startup-id "light -A 5"
-bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
+bindsym XF86MonBrightnessUp exec --no-startup-id "light -A 5.0"
+bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5.0"
 
 #..........
 # Look

@@ -26,6 +26,9 @@ TEXT
   { "full_text" : " ${if_up enp0s31f6}\uf0e8   ${addrs enp0s31f6}${else}${if_up wlp58s0}\uf1eb   ${addrs wlp58s0}${else}\uf127${endif}${endif} ",
     "color" : "${if_up enp0s31f6}\#87c7bf${else}${if_up wlp58s0}\#87c7bf${else}\#f57900${endif}${endif}" },
 
+  ## Screen backlight status
+  { "full_text" : " \uf185   ${exec light -G}% ", "color" : "\#87c7bf" },
+
   ## Bluetooth status
   { "full_text" : " ${if_match ${exec bt-adapter -l | wc -l} > 1}\uf293${else}\uf294${endif} ",
     "color" : "${if_match ${exec bt-adapter -l | wc -l} > 1}\#87c7bf${else}\#f57900${endif}" },

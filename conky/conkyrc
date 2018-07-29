@@ -62,7 +62,7 @@ ${if_match ${battery_percent BAT1} >= 5}\
 ${else}\
 \uf244\
 ${endif}${endif}${endif}${endif}   ${battery_percent BAT1}% ",
-"color" : "${if_match ${battery_percent BAT0} <= 5}${if_match ${battery_percent BAT1} <= 5}\#f57900${endif}${else}\#87c7bf${endif}" },
+"color" : "${if_match ${battery_percent BAT0} <= 5}${if_match ${battery_percent BAT1} <= 5}\#f57900${else}\#87c7bf${endif}${endif}" },
 
   ## RAM Info
   { "full_text" : " \uf538   ${mem} " , "color" : "\#87c7bf" },

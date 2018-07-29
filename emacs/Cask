@@ -39,6 +39,7 @@
 (depends-on "lsp-ui")
 (depends-on "makey")
 (depends-on "markdown-mode")
+(depends-on "markdown-toc")
 (depends-on "memoize")
 (depends-on "modern-cpp-font-lock")
 (depends-on "multiple-cursors")

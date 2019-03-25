@@ -91,12 +91,12 @@ workspace_auto_back_and_forth yes
 set $tag1  "1:  "
 set $tag2  "2:  "
 set $tag3  "3:  "
-set $tag4  "4:  "
+set $tag4  "4:  "
 set $tag5  "5:  "
 set $tag6  "6:[VI]"
 set $tag7  "7:  "
 set $tag8  "8:  "
-set $tag9  "9:  "
+set $tag9  "9:  "
 set $tag10 "10:  "
 
 # switch to workspace
@@ -135,7 +135,7 @@ bindsym $mod+Shift+r restart
 #############################################
 # Modes
 #############################################
-set $sysmenu "  [p]oweroff    [r]eboot    [l]ogout    [s]uspend    [h]ibernate"
+set $sysmenu "  [p]oweroff    [r]eboot    [l]ogout    [s]uspend    [h]ibernate"
 bindsym $mod+Delete mode $sysmenu
 
 mode $sysmenu

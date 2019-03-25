@@ -49,9 +49,9 @@ URxvt*scrollTtyOutput:   false
 URxvt*scrollWithBuffer:  true
 URxvt*termName:          rxvt-unicode-256color
 URxvt*transparent:       false
-URxvt.font:              xft:IBM 3270:medium:size=15
+Rxvt.font:              xft:IBM 3270:medium:size=15
 URxvt.keysym.M-Escape:   perl:keyboard-select:activate
-URxvt.letterSpace:       0
+URxvt.letterSpace:       -3
 URxvt.matcher.button:    1
 URxvt.matcher.rend.0:    Uline Bold fg5
 URxvt.url-launcher:      firefox

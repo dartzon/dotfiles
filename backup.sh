@@ -7,4 +7,5 @@ source scripts/backup-pkgs.sh -b
 
 git add *
 git commit -m "dotfile backup from ${HOSTNAME} on $(date)"
+git push --set-upstream origin ${_git_branch}
 git push

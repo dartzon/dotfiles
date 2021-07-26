@@ -20,6 +20,7 @@ linux
 linux-firmware
 linux-hardened
 lm_sensors
+logwatch
 lsof
 m4
 make

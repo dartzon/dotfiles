@@ -35,6 +35,7 @@ patch
 pigz
 pkgconf
 postfix
+postfix-sqlite
 reflector
 rxvt-unicode
 s-nail

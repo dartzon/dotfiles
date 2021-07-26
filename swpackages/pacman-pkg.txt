@@ -26,6 +26,7 @@ make
 man-db
 nano
 nano-syntax-highlighting
+neofetch
 net-tools
 openssh
 p7zip

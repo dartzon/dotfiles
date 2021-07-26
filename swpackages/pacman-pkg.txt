@@ -22,7 +22,6 @@ lm_sensors
 logwatch
 lsof
 m4
-mailutils
 make
 man-db
 nano
@@ -38,6 +37,7 @@ pkgconf
 postfix
 reflector
 rxvt-unicode
+s-nail
 strace
 sudo
 texinfo

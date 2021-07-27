@@ -5,6 +5,7 @@ base
 bash-completion
 binutils
 bison
+certbot
 docker
 docker-compose
 fail2ban
@@ -31,6 +32,7 @@ net-tools
 openssh
 p7zip
 packup
+pacutils
 pakbak-git
 patch
 pigz

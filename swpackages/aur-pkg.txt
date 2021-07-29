@@ -1,3 +1,4 @@
 packup
 pakbak-git
+portainer-bin
 yay

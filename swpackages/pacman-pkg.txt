@@ -41,7 +41,6 @@ pakbak-git
 patch
 pigz
 pkgconf
-portainer-bin
 postfix
 postfix-sqlite
 reflector

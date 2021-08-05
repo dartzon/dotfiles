@@ -18,6 +18,7 @@ git
 gnu-netcat
 groff
 htop
+imagemagick
 libtool
 linux
 linux-firmware

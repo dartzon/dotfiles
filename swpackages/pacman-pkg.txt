@@ -54,6 +54,7 @@ tree
 ufw
 unrar
 unzip
+usbutils
 wget
 which
 yay

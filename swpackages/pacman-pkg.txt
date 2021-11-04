@@ -43,6 +43,7 @@ pigz
 pkgconf
 postfix
 postfix-sqlite
+python-dtlssocket
 reflector
 rxvt-unicode
 s-nail

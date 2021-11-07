@@ -27,11 +27,14 @@ lsof
 m4
 make
 man-db
+mkinitcpio-nfs-utils
 nano
 nano-syntax-highlighting
 neofetch
 net-tools
 networkmanager
+nfs-utils
+nfsidmap
 nmap
 openssh
 p7zip

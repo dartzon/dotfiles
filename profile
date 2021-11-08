@@ -28,6 +28,3 @@ export EDITOR=nano
 
 # Public GPG Key
 export GPGKEY=
-
-
-rm -rf docker/mariadb/socket/mysqld.sock/

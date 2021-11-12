@@ -46,6 +46,7 @@ pkgconf
 postfix
 postfix-sqlite
 python-dtlssocket
+python-libseccomp
 reflector
 rxvt-unicode
 s-nail

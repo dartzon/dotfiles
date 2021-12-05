@@ -59,5 +59,6 @@ unzip
 usbutils
 wget
 which
+wireguard-tools
 yay
 zip

@@ -24,7 +24,6 @@ linux
 linux-firmware
 linux-hardened
 lm_sensors
-logwatch
 lsof
 m4
 make
@@ -43,8 +42,6 @@ pakbak-git
 patch
 pigz
 pkgconf
-postfix
-postfix-sqlite
 reflector
 rxvt-unicode
 s-nail

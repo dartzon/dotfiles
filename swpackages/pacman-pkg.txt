@@ -24,6 +24,7 @@ linux
 linux-firmware
 linux-hardened
 lm_sensors
+logwatch
 lsof
 m4
 make
@@ -40,6 +41,7 @@ packup
 pacutils
 pakbak-git
 patch
+perl-date-manip
 pigz
 pkgconf
 reflector
@@ -49,6 +51,8 @@ strace
 sudo
 tcpdump
 texinfo
+tmux
+tmux-bash-completion-git
 tree
 ufw
 unrar

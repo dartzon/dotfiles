@@ -39,10 +39,9 @@ packup
 pacutils
 pakbak-git
 patch
+perl-date-manip
 pigz
 pkgconf
-postfix
-postfix-sqlite
 reflector
 rxvt-unicode
 s-nail
@@ -50,6 +49,8 @@ strace
 sudo
 tcpdump
 texinfo
+tmux
+tmux-bash-completion-git
 tree
 ufw
 unrar

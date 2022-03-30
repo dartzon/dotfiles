@@ -1,4 +1,5 @@
 atool
 packup
 pakbak-git
+tmux-bash-completion-git
 yay

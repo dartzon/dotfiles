@@ -41,10 +41,9 @@ packup
 pacutils
 pakbak-git
 patch
+perl-date-manip
 pigz
 pkgconf
-postfix
-postfix-sqlite
 python-dtlssocket
 python-libseccomp
 reflector
@@ -54,6 +53,8 @@ strace
 sudo
 tcpdump
 texinfo
+tmux
+tmux-bash-completion-git
 tree
 ufw
 unrar

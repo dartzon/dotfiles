@@ -34,6 +34,7 @@ nano-syntax-highlighting
 neofetch
 net-tools
 networkmanager
+nfs-utils
 nmap
 openssh
 p7zip

@@ -1,3 +1,4 @@
+bento4
 packup
 pakbak-git
 tmux-bash-completion-git

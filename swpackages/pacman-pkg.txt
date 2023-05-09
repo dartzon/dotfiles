@@ -3,6 +3,7 @@ autoconf
 automake
 base
 bash-completion
+bento4
 bind
 binutils
 bison
@@ -12,12 +13,15 @@ docker
 docker-compose
 fail2ban
 fakeroot
+fdkaac
+ffmpeg
 flex
 gcc
 git
 gnu-netcat
 groff
 htop
+libfdk-aac
 libtool
 linux
 linux-firmware

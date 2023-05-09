@@ -7,6 +7,7 @@ bind
 binutils
 bison
 certbot
+cifs-utils
 docker
 docker-compose
 fail2ban
@@ -32,6 +33,7 @@ nano-syntax-highlighting
 neofetch
 net-tools
 networkmanager
+nfs-utils
 nmap
 openssh
 p7zip

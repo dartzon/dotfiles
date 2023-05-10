@@ -3,6 +3,7 @@ autoconf
 automake
 base
 bash-completion
+bc
 bento4
 bind
 binutils
@@ -32,6 +33,7 @@ lsof
 m4
 make
 man-db
+mediainfo
 nano
 nano-syntax-highlighting
 neofetch
@@ -45,7 +47,9 @@ packup
 pacutils
 pakbak-git
 patch
+perl-archive-zip
 perl-date-manip
+perl-image-exiftool
 pigz
 pkgconf
 reflector

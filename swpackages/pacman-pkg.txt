@@ -53,6 +53,7 @@ perl-image-exiftool
 pigz
 pkgconf
 reflector
+rsync
 rxvt-unicode
 s-nail
 strace

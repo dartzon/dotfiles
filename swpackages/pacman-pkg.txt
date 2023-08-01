@@ -27,6 +27,7 @@ lsof
 m4
 make
 man-db
+mesa
 nano
 nano-syntax-highlighting
 neofetch

@@ -12,6 +12,7 @@ docker-compose
 fail2ban
 fakeroot
 flex
+gasket-dkms
 gcc
 git
 gnu-netcat

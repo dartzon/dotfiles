@@ -22,6 +22,8 @@ libtool
 linux
 linux-firmware
 linux-hardened
+linux-hardened-headers
+linux-headers
 lm_sensors
 logwatch
 lsof

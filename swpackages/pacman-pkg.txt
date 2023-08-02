@@ -65,6 +65,7 @@ ufw
 unrar
 unzip
 usbutils
+vulkan-radeon
 wget
 which
 yay

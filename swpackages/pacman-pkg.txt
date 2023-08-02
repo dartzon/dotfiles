@@ -20,6 +20,10 @@ gnu-netcat
 groff
 htop
 libtool
+libva-mesa-driver
+libva-utils
+libva-vdpau-driver
+libvdpau-va-gl
 linux
 linux-firmware
 linux-hardened
@@ -32,6 +36,7 @@ m4
 make
 man-db
 mesa
+mesa-vdpau
 nano
 nano-syntax-highlighting
 neofetch
@@ -51,6 +56,7 @@ pigz
 pkgconf
 python-dtlssocket
 python-libseccomp
+radeontop
 reflector
 rxvt-unicode
 s-nail

@@ -37,6 +37,7 @@ make
 man-db
 mesa
 mesa-vdpau
+mpv
 nano
 nano-syntax-highlighting
 neofetch
@@ -71,7 +72,6 @@ ufw
 unrar
 unzip
 usbutils
-vulkan-radeon
 wget
 which
 yay

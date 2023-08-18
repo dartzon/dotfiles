@@ -1,3 +1,4 @@
+amf-amdgpu-pro
 atool
 autoconf
 automake

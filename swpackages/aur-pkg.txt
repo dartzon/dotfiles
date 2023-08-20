@@ -1,3 +1,5 @@
+amdgpu-pro-oglp
+amf-amdgpu-pro
 gasket-dkms
 packup
 pakbak-git

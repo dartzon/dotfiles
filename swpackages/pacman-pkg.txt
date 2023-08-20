@@ -1,4 +1,3 @@
-amf-amdgpu-pro
 atool
 autoconf
 automake
@@ -36,7 +35,8 @@ lsof
 m4
 make
 man-db
-mesa
+mesa-amber
+mesa-utils
 mesa-vdpau
 mpv
 nano

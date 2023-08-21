@@ -4,6 +4,7 @@ atool
 autoconf
 automake
 base
+base-devel
 bash-completion
 bind
 binutils
@@ -12,6 +13,8 @@ certbot
 dkms
 docker
 docker-compose
+dosfstools
+downgrade
 fail2ban
 fakeroot
 flex
@@ -49,6 +52,7 @@ networkmanager
 nfs-utils
 nfsidmap
 nmap
+ntfs-3g
 openssh
 p7zip
 packup

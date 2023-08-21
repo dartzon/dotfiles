@@ -1,5 +1,6 @@
 amdgpu-pro-oglp
 amf-amdgpu-pro
+downgrade
 gasket-dkms
 packup
 pakbak-git

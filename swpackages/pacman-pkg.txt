@@ -46,6 +46,7 @@ mesa-vdpau
 mpv
 nano
 nano-syntax-highlighting
+ncdu
 neofetch
 net-tools
 networkmanager

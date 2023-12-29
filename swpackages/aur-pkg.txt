@@ -1,7 +1,7 @@
 amdgpu-pro-oglp
 amf-amdgpu-pro
 downgrade
-gasket-dkms
+gasket-dkms-git
 packup
 pakbak-git
 python-dtlssocket

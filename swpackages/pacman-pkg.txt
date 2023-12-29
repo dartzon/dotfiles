@@ -18,7 +18,7 @@ downgrade
 fail2ban
 fakeroot
 flex
-gasket-dkms
+gasket-dkms-git
 gcc
 git
 gnu-netcat

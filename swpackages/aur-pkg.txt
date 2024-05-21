@@ -6,4 +6,5 @@ packup
 pakbak-git
 python-dtlssocket
 tmux-bash-completion-git
-yay
+yay-bin
+yay-bin-debug

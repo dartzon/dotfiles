@@ -3,6 +3,7 @@ atool
 autoconf
 automake
 base
+base-devel
 bash-completion
 bind
 binutils
@@ -63,5 +64,6 @@ usbutils
 wget
 which
 wireguard-tools
-yay
+yay-bin
+yay-bin-debug
 zip

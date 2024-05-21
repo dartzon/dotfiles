@@ -1,4 +1,5 @@
 packup
 pakbak-git
 tmux-bash-completion-git
-yay
+yay-bin
+yay-bin-debug

@@ -2,6 +2,7 @@ atool
 autoconf
 automake
 base
+base-devel
 bash-completion
 bc
 bento4
@@ -69,5 +70,6 @@ unzip
 usbutils
 wget
 which
-yay
+yay-bin
+yay-bin-debug
 zip

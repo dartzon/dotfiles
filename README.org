@@ -1,0 +1,141 @@
+* Othmane AIT EL CADI's dotfiles
+  :PROPERTIES:
+  :CUSTOM_ID: othmane-ait-el-cadis-dotfiles
+  :END:
+
+** What are dotfiles?
+   :PROPERTIES:
+   :CUSTOM_ID: what-are-dotfiles
+   :END:
+
+In the Linux world, dotfiles are a collection of directories,
+configuration files and custom scripts that are used to customize the
+user experience and tweak the system's look and behavior.
+
+This repository contains the dotfiles that I use on my personal and work
+Linux computers. I tried to make them as portable as possible but in
+some cases it's just not possible to work around machine specific
+requirements, in that case, manual adaption is required.
+
+** Provided configuration files
+   :PROPERTIES:
+   :CUSTOM_ID: provided-configuration-files
+   :END:
+
+*** Desktop environment
+    :PROPERTIES:
+    :CUSTOM_ID: desktop-environment
+    :END:
+
+Software to customize the look & feel of my desktop environment
+|Software|Description|
+|[[https://i3wm.org/][i3]]|Tiling window manager|
+|[[https://github.com/davatorium/rofi][rofi]]|Application launcher|
+|[[https://dunst-project.org/][dunst]]|Notification daemon|
+|[[https://polybar.github.io/][polybar]]|Status bar|
+|[[https://github.com/phillipberndt/autorandr][autorandr]]|xrandr automation|
+
+*** Essential software
+    :PROPERTIES:
+    :CUSTOM_ID: essential-software
+    :END:
+
+Essential everyday productivity software
+|Software|Description|
+|[[https://www.gnu.org/software/emacs/][emacs]]|Application launcher|
+|[[https://alacritty.org/][alacritty]]|Window manager|
+|[[https://starship.rs/][starship]]|Notification daemon|
+
+*** Goodies
+    :PROPERTIES:
+    :CUSTOM_ID: goodies
+    :END:
+
+Various software and scripts
+|Software|Description|
+|[[https://www.jwz.org/xscreensaver/][xscreensaver]]|X11 screensaver|
+|[[https://github.com/mbrubeck/android-completion][adb bash completion]]|adb & repo commands bash completion|
+|bash profile|Useful Bash environment configuration|
+|passwords storage|Automatic passwords restoration from a [[https://keepassxc.org/][Keepass]] database|
+
+** Visual results
+   :PROPERTIES:
+   :CUSTOM_ID: visual-results
+   :END:
+
+#+CAPTION: Screenshot of my Linux desktop
+#+ATTR_HTML: :alt Screenshot of my Linux desktop :title Screenshot of my Linux desktop :align left
+[[file:.repo-screenshots/desktop-screenshot.png?raw=true]]
+
+** Dependencies
+   :PROPERTIES:
+   :CUSTOM_ID: dependencies
+   :END:
+
+The provided dotfiles assume that the software in the list bellow is
+installed in your system. Please note that the packages names could be
+different and not all of them are available through your Linux
+distribution's package manager. In that case, the missing packages will
+have to be built from the sources.
+
+*** Software
+    :PROPERTIES:
+    :CUSTOM_ID: software
+    :END:
+
+| alacritty   | autorandr          | dunst       | emacs       | feh      | firefox        |
+| git         | gnome calculator   | i3          | keepassxc   | light    | numlockx       |
+| pactl       | pavucontrol        | playerctl   | polybar     | python   | redshift       |
+| rofi        | scrot              | startship   | xclip       | xrandr   | xscreensaver   |
+
+*** Fonts
+    :PROPERTIES:
+    :CUSTOM_ID: fonts
+    :END:
+
+- 3270 Nerd Font
+- Cantarell
+- Fira code
+- Liberation Mono
+- Montserrat
+- Symbols Nerd Font
+- Terminess Nerd font
+- Terminus
+
+** Installation
+   :PROPERTIES:
+   :CUSTOM_ID: installation
+   :END:
+
+*Warning:* The dotfiles in this repository are *specific* to my Linux
+setup and workflow. Please *ADAPT* them to your needs before using them.
+
+Installation steps:
+
+#+BEGIN_SRC sh
+    $ cd
+    $ git clone --recurse-submodules -j8 git@github.com:dartzon/dotfiles.git .dotfiles
+    $ cd .dotfiles
+    $ cp dotbot/tools/git-submodule/install .
+    $ # !!!ADAPT THE DOTFILES TO YOUR NEEDS!!!
+    $ ./install
+#+END_SRC
+
+After the installation is done, please re-login for the new
+configuration to fully take effect.
+
+** Feedback
+   :PROPERTIES:
+   :CUSTOM_ID: feedback
+   :END:
+
+*You are welcomed* to try my dotfiles in your Linux setup or just get
+some inspiration from them. For suggestions or bug reports, please
+contact me at dartzon@gmail.com
+
+** Author
+   :PROPERTIES:
+   :CUSTOM_ID: author
+   :END:
+
+Othmane AIT EL CADI / dartzon@gmail.com

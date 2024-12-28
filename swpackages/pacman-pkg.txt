@@ -1,3 +1,4 @@
+7zip
 atool
 autoconf
 automake
@@ -43,7 +44,6 @@ networkmanager
 nfs-utils
 nmap
 openssh
-p7zip
 packup
 pacutils
 pakbak-git

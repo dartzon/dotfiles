@@ -1,4 +1,6 @@
 7zip
+ansible
+ansible-core
 atool
 autoconf
 automake

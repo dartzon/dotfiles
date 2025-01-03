@@ -1,6 +1,7 @@
 7zip
 ansible
 ansible-core
+ansible-navigator
 atool
 autoconf
 automake
@@ -72,6 +73,7 @@ unzip
 usbutils
 wget
 which
-yay-bin
+yay
 yay-bin-debug
+yay-debug
 zip

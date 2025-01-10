@@ -56,6 +56,7 @@ perl-date-manip
 perl-image-exiftool
 pigz
 pkgconf
+python-passlib
 reflector
 rsync
 rxvt-unicode

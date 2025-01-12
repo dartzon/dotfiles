@@ -1,3 +1,4 @@
+7zip
 amdgpu-pro-oglp
 amf-amdgpu-pro
 atool
@@ -25,7 +26,6 @@ gnu-netcat
 groff
 htop
 libtool
-libva-mesa-driver
 libva-utils
 libva-vdpau-driver
 libvdpau-va-gl
@@ -40,9 +40,8 @@ lsof
 m4
 make
 man-db
-mesa-amber
+mesa
 mesa-utils
-mesa-vdpau
 mpv
 nano
 nano-syntax-highlighting
@@ -55,7 +54,6 @@ nfsidmap
 nmap
 ntfs-3g
 openssh
-p7zip
 packup
 pacutils
 pakbak-git

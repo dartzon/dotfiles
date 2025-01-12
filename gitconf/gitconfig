@@ -1,6 +1,9 @@
 [user]
 	name = Othmane AIT EL CADI
 	email = dartzon@gmail.com
+[extensions]
+    objectFormat = sha256
+    compatObjectFormat = sha256
 [merge]
 	tool = meld
 [mergetool "meld"]
@@ -18,9 +21,11 @@
     cmd = meld \"$LOCAL\" \"$REMOTE\" --label \"DIFF (ORIGINAL MY)\"
 	prompt = false
 [core]
-	editor = emacs
+	editor = nano
 	excludesfile = ~/.config/git/gitignore
 [commit]
 	template = ~/.config/git/gitcommitmsg.txt
 [alias]
 	tree = log --graph --full-history --all --color --date=short --pretty=format:\"%Cred%x09%h %Creset%ad%Cblue%d %Creset %s %C(bold)(%an)%Creset\"
+[color]
+	ui = auto

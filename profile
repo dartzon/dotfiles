@@ -28,3 +28,6 @@ export EDITOR=nano
 
 # Public GPG Key
 export GPGKEY=
+
+# Pandoc alias to use the pandoc docker container
+alias pandoc='docker run --rm  --volume "$(pwd):/data" --user $(id -u):$(id -g) pandoc/minimal'

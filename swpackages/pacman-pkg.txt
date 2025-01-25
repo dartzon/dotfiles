@@ -24,6 +24,7 @@ ffmpeg
 flex
 gcc
 git
+git-lfs
 gnu-netcat
 groff
 htop

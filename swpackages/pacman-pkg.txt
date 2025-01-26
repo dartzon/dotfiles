@@ -28,6 +28,7 @@ git-lfs
 gnu-netcat
 groff
 htop
+keepassxc
 libfdk-aac
 libtool
 linux

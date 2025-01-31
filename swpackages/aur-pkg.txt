@@ -1,5 +1,6 @@
 ansible-navigator
 bento4
+nodejs-postcss-cli
 packup
 pakbak-git
 tmux-bash-completion-git

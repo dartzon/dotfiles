@@ -49,6 +49,8 @@ net-tools
 networkmanager
 nfs-utils
 nmap
+nodejs-postcss-cli
+npm
 openssh
 packup
 pacutils

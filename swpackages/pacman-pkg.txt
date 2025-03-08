@@ -29,6 +29,7 @@ gnu-netcat
 groff
 htop
 hugo
+jq
 keepassxc
 libfdk-aac
 libtool

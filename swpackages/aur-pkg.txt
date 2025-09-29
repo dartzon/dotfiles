@@ -1,5 +1,6 @@
-ansible-navigator
 bento4
+gnu-netcat
+neofetch
 nodejs-postcss-cli
 packup
 pakbak-git

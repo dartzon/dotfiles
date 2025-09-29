@@ -53,6 +53,7 @@ nmap
 nodejs-postcss-cli
 npm
 openssh
+packer
 packup
 pacutils
 pakbak-git
@@ -64,7 +65,10 @@ pigz
 pkgconf
 python-docutils
 python-passlib
+qemu-base
+qemu-system-x86
 reflector
+repo
 rsync
 rxvt-unicode
 s-nail

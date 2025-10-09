@@ -7,4 +7,3 @@ pakbak-git
 tmux-bash-completion-git
 yay
 yay-bin-debug
-yay-debug

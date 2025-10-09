@@ -87,5 +87,4 @@ wget
 which
 yay
 yay-bin-debug
-yay-debug
 zip

@@ -1,0 +1,10 @@
+﻿---
+BasedOnStyle: LLVM
+AllowShortCaseLabelsOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: None
+ColumnLimit: '130'
+IndentWidth: '4'
+Language: Cpp
+UseTab: Never
+
+...

@@ -1,0 +1,61 @@
+##--------------------------------------------------
+## Media control
+##--------------------------------------------------
+# Sound volume control
+XF86AudioRaiseVolume
+    pactl set-sink-volume @DEFAULT_SINK@ +5%
+XF86AudioLowerVolume
+    pactl set-sink-volume @DEFAULT_SINK@ -5%
+XF86AudioMute
+    pactl set-sink-mute @DEFAULT_SINK@ toggle
+XF86AudioMicMute
+    pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+# Play/Pause music
+XF86AudioPlay
+    playerctl -a play-pause
+XF86AudioPrev
+    playerctl -a previous
+XF86AudioNext
+    playerctl -a next
+
+##--------------------------------------------------
+## Screen brightness
+##--------------------------------------------------
+XF86MonBrightnessUp
+    brightnessctl -c backlight set +5%
+XF86MonBrightnessDown
+    brightnessctl -c backlight set 5%-
+
+##--------------------------------------------------
+## Programs launch
+##--------------------------------------------------
+# Screen lock/Screen saver
+super + End
+    xscreensaver & xscreensaver-command -lock
+# Rofi launcher
+super + space
+    rofi -show drun -show-icons -config ~/.config/rofi/config.rasi
+# Screenshots
+Print
+    scrot -u 'Screenshot from %Y-%m-%d %H-%M-%S.png' -e 'mv "$f" ~/Pictures/'
+shift + Print
+    sleep 0.2 ; scrot -s 'Screenshot from %Y-%m-%d %H-%M-%S.png' -e 'mv "$f" ~/Pictures/'
+
+# Gnome calculator
+XF86Calculator
+    gnome-calculator
+
+# Emacs
+super + F1
+    systemctl --user start emacs.service; emacsclient -c
+XF86Favorites
+    systemctl --user start emacs.service; emacsclient -c
+XF86Tools
+    systemctl --user start emacs.service; emacsclient -c
+super + shift + e
+    killall emacs; systemctl --user restart emacs; notify-send -u normal 'emacs daemon' 'Emacs configuration reloaded'
+
+# Alacritty
+super + Return
+    alacritty

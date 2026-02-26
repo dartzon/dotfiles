@@ -1,0 +1,5 @@
+# Load display configuration
+autorandr -c
+
+# Dynamically generate the list of monitors for i3wm
+. ~/.dotfiles/display/i3/gen-monitors-list.sh

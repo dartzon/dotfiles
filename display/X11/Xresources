@@ -1,0 +1,6 @@
+Xcursor.size: 16
+
+*antialias:              true
+*autohint:               true
+
+#include "i3-xresources"

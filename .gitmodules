@@ -1,0 +1,8 @@
+[submodule "dotbot"]
+	path = dotbot
+	url = https://github.com/anishathalye/dotbot
+	ignore = dirty
+[submodule "terminal/tmux/themes"]
+	path = terminal/tmux/themes
+	url = https://github.com/jimeh/tmux-themepack.git
+	ignore = dirty

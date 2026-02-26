@@ -1,0 +1,58 @@
+- defaults:
+    link:
+      create: true
+      force: true
+
+- clean: ['~']
+
+- shell:
+    - [git submodule update --init --recursive, Installing submodules]
+    - [exec ~/.dotfiles/e-identity/extract-keys.sh, Generate GPG and SSH keys]
+    - [emacs --batch --eval "(require 'org)" --eval '(org-babel-tangle-file "~/.dotfiles/terminal/profile.org")', Generate .profile from org file]
+
+- create:
+    - ~/bin
+    
+- link:
+    # Terminal
+    ~/.bashrc: terminal/profile
+    ~/.profile: terminal/profile
+    ~/.profile.local: terminal/profile.local
+    ~/.secrets.local: terminal/secrets.local
+    ~/.bash_completion.d: terminal/bash_completion
+    ~/.starship.toml: terminal/starship.toml
+    ~/.tmux.conf: terminal/tmux/tmux.conf
+    ~/.alacritty.toml: terminal/alacritty/alacritty.toml
+    # Systemd services
+    ~/.config/systemd/user: systemd/
+    # ~/bin directory
+    ~/bin/:
+      glob: true
+      path: bin/*
+    # Window manager
+    ~/.xprofile: display/X11/xprofile
+    ~/.Xresources: display/X11/Xresources
+    ~/.config/autorandr/postswitch: display/autorandr/postswitch
+    ~/.xscreensaver: display/X11/xscreensaver
+    ~/.config/sxhkd: display/sxhkd/
+    ~/.config/i3: display/i3/
+    ~/.config/dunst: display/dunst/
+    ~/.config/rofi: display/rofi/
+    ~/.config/polybar/config.ini: display/polybar/config.ini
+    # Git
+    ~/.config/git: gitconf/
+    ~/.gitconfig: gitconf/gitconfig
+    # Emacs
+    ~/.emacs.d: emacs/
+    # Emails
+    ~/.mbsyncrc: mail/mbsyncrc
+    ~/.msmtprc: mail/msmtprc
+
+- shell:
+  - [systemctl --user enable geoclue-agent.service; systemctl --user start geoclue-agent.service, Start geoclue for Redshift]
+  - [systemctl --user enable redshift.service; systemctl --user start redshift.service, Start Redshift]
+  - [systemctl --user enable emacs.service; systemctl --user start emacs.service, Start Emacs]
+  - [chmod +x ~/bin/*, Make everything executable inside of ~/bin/]
+  # Setting up emails
+  - [chmod +x ~/.dotfiles/mail/install-service.sh; /bin/bash ~/.dotfiles/mail/install-service.sh]
+  - [chmod 600 ~/.msmtprc]

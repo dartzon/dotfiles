@@ -1,0 +1,1785 @@
+#+TITLE:Emacs configuration
+#+AUTHOR: Othmane Ait El Cadi
+#+DESCRIPTION: Emacs configuration for my personal computers
+#+STARTUP: show2levels
+#+OPTIONS: toc:2
+
+This is the Emacs configuration file that I use accross all  of my Linux computers. It is written in Org mode to be easy to read and maintain.
+
+* Emacs package manager
+** Elpaca
+#+begin_src emacs-lisp
+  (defvar elpaca-installer-version 0.11)
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                                :ref nil :depth 1 :inherit ignore
+                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                                :build (:not elpaca--activate-package)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+         (build (expand-file-name "elpaca/" elpaca-builds-directory))
+         (order (cdr elpaca-order))
+         (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (<= emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                    ,@(when-let* ((depth (plist-get order :depth)))
+                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                    ,(plist-get order :repo) ,repo))))
+                    ((zerop (call-process "git" nil buffer t "checkout"
+                                          (or (plist-get order :ref) "--"))))
+                    (emacs (concat invocation-directory invocation-name))
+                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                    ((require 'elpaca))
+                    ((elpaca-generate-autoloads "elpaca" repo)))
+              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+            (error "%s" (with-current-buffer buffer (buffer-string))))
+        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order))
+#+end_src
+
+** use-package support
+#+begin_src emacs-lisp
+  ;; Install use-package support
+  (elpaca elpaca-use-package
+    ;; Enable use-package :ensure support for Elpaca.
+    (elpaca-use-package-mode))
+
+  ;;Turns off elpaca-use-package-mode current declaration
+  ;;Note this will cause the declaration to be interpreted immediately (not deferred).
+  ;;Useful for configuring built-in emacs features.
+  (use-package emacs :ensure nil :config (setq ring-bell-function #'ignore))
+
+  (if init-file-debug
+      (setq use-package-verbose t
+            use-package-expand-minimally nil
+            use-package-compute-statistics t
+            debug-on-error t)
+    (setq use-package-verbose nil
+          use-package-expand-minimally t))
+#+end_src
+
+* Bootstrap config
+** Performance optimization
+#+begin_src emacs-lisp
+  (use-package gcmh
+    :ensure t
+    :config
+    (gcmh-mode 1))
+#+end_src
+
+** Load environment variables in Daemon mode
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    ;; Only run this when Emacs is in daemon mode.
+    (when (daemonp)
+      (add-to-list 'exec-path-from-shell-variables "GEMINI_API_KEY")
+      (exec-path-from-shell-initialize)))
+#+end_src
+
+* Keep Emacs config directory clean
+#+begin_src emacs-lisp
+  ;; This path is specifically needed by the persistent-scratch package
+  (setq emacs-saves-directory (concat user-emacs-directory ".saves/"))
+  (unless (file-exists-p emacs-saves-directory)
+    (make-directory emacs-saves-directory t))
+
+  (use-package no-littering
+    :ensure t
+    :init
+    (setq no-littering-etc-directory (expand-file-name "config/" user-emacs-directory)
+          no-littering-var-directory (expand-file-name "data/" user-emacs-directory)
+          custom-file (no-littering-expand-etc-file-name "custom-vars.el"))
+
+    :config
+    (load custom-file t)
+    )
+#+end_src
+
+* GUI config
+** General
+#+begin_src emacs-lisp
+  ;; Use 'y' and 'n' instead of 'yes' and 'no'
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
+  ;; Show the line and column number in the mode line (changes "L123" to "123:45")
+  (line-number-mode 1)
+  (column-number-mode 1)
+#+end_src
+
+** Remove visual noise
+#+begin_src emacs-lisp
+  ;; Disable startup screen
+  (setq inhibit-startup-screen t)
+
+  ;; Disable menu bar, tool bar and scroll bar
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+
+  ;; Prevent the *Warnings* buffer from popping up for minor errors
+  (setq warning-minimum-level :emergency)
+
+  ;; Silence the "Async native compilation" warnings (specific to Emacs 29+)
+  (setq native-comp-async-report-warnings-errors 'silent)
+
+  ;; Turn off dialog boxes.
+  (setq use-dialog-box nil)
+  ;; Wait 1ms before echoing.
+  (setq echo-keystrokes 0.1)
+  ;; Visible bell instead of bip noise.
+  (setq visible-bell t)
+#+end_src
+
+** Disable the mouse
+#+begin_src emacs-lisp
+  ;;; Code copied from: https://endlessparentheses.com/disable-mouse-only-inside-emacs.html
+  (define-minor-mode disable-mouse-mode
+    "A minor-mode that disables all mouse keybinds."
+    :global t
+    :lighter " 🖱️"
+    :keymap (make-sparse-keymap))
+  (dolist (type '(mouse down-mouse drag-mouse
+                        double-mouse triple-mouse))
+    (dolist (prefix '("" C- M- S- M-S- C-M- C-S- C-M-S-))
+      ;; Yes, I actually HAD to go up to 7 here.
+      (dotimes (n 7)
+        (let ((k (format "%s%s-%s" prefix type n)))
+          (define-key disable-mouse-mode-map
+                      (vector (intern k)) #'ignore)))))
+  (disable-mouse-mode 1)
+#+end_src
+
+** Smooth scrolling
+#+begin_src emacs-lisp
+  (pixel-scroll-precision-mode)
+  (setq scroll-step 1
+        scroll-conservatively 10000
+        scroll-preserve-screen-position t)
+#+end_src
+
+** Moving between windows
+#+begin_src emacs-lisp
+  ;; Move point from window to window using Meta
+  ;; and the arrow keys
+  (when (fboundp 'windmove-default-keybindings)
+    (windmove-default-keybindings 'meta))
+#+end_src
+
+** Buffer management
+#+begin_src emacs-lisp
+  (use-package ibuffer
+    :init
+    ;; `/ R` to toggle showing these groups
+    ;; `/ \` to disable
+    (setq-default ibuffer-saved-filter-groups
+                  `(("Default"
+                     ("rg" (name . "\*rg.*\*"))
+                     ("Dired" (mode . dired-mode))
+                     ("Scratch" (name . "\*scratch.*"))
+                     ("Temporary" (name . "\*.*\*"))
+                     )))
+    (setq ibuffer-show-empty-filter-groups nil)
+    :config
+    (define-key ibuffer-mode-map (kbd "M-o") nil)
+    (add-hook 'ibuffer-mode-hook #'(lambda () (ibuffer-auto-mode 1)))
+    :bind ("C-x C-b" . ibuffer))
+#+end_src
+
+#+begin_src emacs-lisp
+  ;; This will kill the buffer instead of burying it for modes that use special-mode
+  (defun my/quit-and-kill-buffer ()
+    "Kill the buffer and delete the window it's displayed in."
+    (interactive)
+    ;; The 't' argument tells quit-window to KILL the buffer.
+    ;; Without 't', it would just bury it.
+    (quit-window t))
+
+  (define-key special-mode-map (kbd "q") #'my/quit-and-kill-buffer)
+#+end_src
+
+** Centered window mode
+#+begin_src emacs-lisp
+  ;; Put everything in the center of the window
+  (defun my/org-mode-visual-fill ()
+    (setq visual-fill-column-width 150
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1))
+
+  (use-package visual-fill-column
+    :elpaca (visual-fill-column :host codeberg :repo "joostkremers/visual-fill-column" :branch "main")
+    :hook ((org-mode org-agenda-mode markdown-mode dashboard-mode) . my/org-mode-visual-fill))
+#+end_src
+
+** Automatic windows resizing based on the content
+#+begin_src emacs-lisp
+  (use-package zoom
+    :ensure t
+    :config
+    (zoom-mode t)
+    ;; Resize the selected window using the golden ratio.
+    (setq zoom-size '(0.618 . 0.618)
+          zoom-ignored-major-modes '(dashboard-mode ediff-mode)))
+#+end_src
+
+** Easy keybindings
+#+begin_src emacs-lisp
+  (use-package general
+    :ensure t)
+#+end_src
+
+** Which-key for keybinding reminder
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure t
+    :config
+    (which-key-mode))
+#+end_src
+
+** Command auto-completion
+#+begin_src emacs-lisp
+  (use-package vertico
+    :ensure t
+    :init
+    (vertico-mode)
+    ;; Optionally, enable cycling for a more intuitive navigation experience.
+    (setq vertico-cycle t))
+
+  (use-package consult
+    :ensure t
+    :bind (;; C-s -> consult-line
+           ("C-s" . consult-line)
+           ;; C-x b -> consult-buffer
+           ("C-x b" . consult-buffer)
+           ("C-c f" . consult-find)))
+
+  (use-package marginalia
+    :ensure t
+    :after vertico
+    :init
+    ;; This connects marginalia to vertico.
+    (marginalia-mode))
+
+  (use-package orderless
+    :ensure t
+    :init
+    ;; Configure orderless to be the default completion style.
+    (setq completion-styles '(orderless)
+          completion-category-overrides '((file (styles . (partial-completion))))))
+#+end_src
+
+** Theme
+*** Zenburn
+#+begin_src emacs-lisp
+  (use-package zenburn-theme
+    :ensure t
+    :init
+    ;; Use variable-pitch fonts for some headings and titles
+    (setq zenburn-use-variable-pitch t
+          ;; Scale headings in org-mode
+          zenburn-scale-org-headlines t
+          ;; Scale headings in outline-mode
+          zenburn-scale-outline-headlines t)
+    :config
+    (load-theme 'zenburn t))
+#+end_src
+
+*** Doom themes
+Doom themes is installed but not globally enabled. It's only enabled when org-present is running
+#+begin_src emacs-lisp
+  (use-package doom-themes
+    :ensure t
+    :config
+    ;; Enable bold and italic for a better look
+    (setq doom-themes-enable-bold t
+          doom-themes-enable-italic t))
+#+end_src
+
+** Mode-line
+*** Doom modeline
+#+begin_src emacs-lisp
+  ;; ==========================================================
+  ;; Generic face configuration
+  ;; ==========================================================
+  ;; These settings define the "Zenburn" look for the editor and standard modeline faces.
+  ;; Doom modeline will inherit these automatically.
+
+  (defun my/set-zenburn-modeline-faces ()
+    "Apply custom colors to match the Zenburn theme configuration."
+
+    ;; Active mode-line (your #2B2B2B background)
+    (set-face-attribute 'mode-line nil
+                        :font "Liberation Mono"
+                        :foreground "#DCDCCC"
+                        :background "#2B2B2B"
+                        :weight 'normal
+                        :width 'normal)
+
+    ;; Inactive mode-line
+    (set-face-attribute 'mode-line-inactive nil
+                        :foreground "#DCDCCC")
+
+    ;; Mode-line buffer id (filename)
+    (set-face-attribute 'mode-line-buffer-id nil
+                        :foreground "#DCDCCC"
+                        :weight 'bold)
+
+    ;; Line numbers (editor gutter)
+    (set-face-attribute 'line-number nil
+                        :foreground "dark gray"
+                        :background "#3F3F3F")
+
+    ;; Current line number (gold accent)
+    (set-face-attribute 'line-number-current-line nil
+                        :foreground "gold"
+                        :weight 'bold))
+
+  ;; Apply these faces on startup and when creating new frames (with daemon mode support)
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+                (lambda (frame)
+                  (with-selected-frame frame
+                    (my/set-zenburn-modeline-faces))))
+    (my/set-zenburn-modeline-faces))
+
+  ;; ==========================================================
+  ;; Doom modeline configuration
+  ;; ==========================================================
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1)
+    :config
+
+    ;; -- Dimensions --
+    (setq doom-modeline-height 28)
+    ;; The small colored bar on the far left
+    (setq doom-modeline-bar-width 4)
+
+    ;; -- Aesthetics --
+    ;; Use nerd-icons
+    (setq doom-modeline-icon t)
+    (setq doom-modeline-major-mode-icon t)
+    (setq doom-modeline-major-mode-color-icon t)
+    (setq doom-modeline-buffer-file-name-style 'file-name)
+
+    ;; -- Performance optimizations --
+    ;; Reduce lag
+    (setq doom-modeline-buffer-state-icon t)
+    ;; Git icon can be slow in large repos
+    (setq doom-modeline-commit-icon nil)
+
+    ;; -- Custom colors --
+    (custom-set-faces
+     ;; Make the "search match" count goldg
+     '(doom-modeline-info ((t (:foreground "gold" :weight bold))))
+     '(doom-modeline-urgent ((t (:foreground "gold" :weight bold))))
+
+     ;; Ensure the folder path matches the buffer-id color
+     '(doom-modeline-buffer-path ((t (:foreground "#DCDCCC" :weight bold))))
+
+     ;; Make the mode-line bar (far left) gold
+     '(doom-modeline-bar ((t (:background "gold"))))))
+#+end_src
+
+** Treemacs (File and project explorer)
+#+begin_src emacs-lisp
+  (use-package treemacs
+    :ensure t
+    :defer t
+    :config
+    (progn
+      (setq treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+            treemacs-sorting                         'alphabetic-asc
+            treemacs-width                           35
+            treemacs-width-increment                 1
+            treemacs-follow-after-init               t
+            treemacs-project-follow-mode             t
+            )
+
+      ;; The default width and height of the icons is 22 pixels. If you are
+      ;; using a Hi-DPI display, uncomment this to double the icon size.
+      ;;(treemacs-resize-icons 44)
+
+      (treemacs-follow-mode t)
+      (treemacs-filewatch-mode t)
+      (treemacs-fringe-indicator-mode 'always)
+      (when treemacs-python-executable
+        (treemacs-git-commit-diff-mode t))
+
+      (pcase (cons (not (null (executable-find "git")))
+                   (not (null treemacs-python-executable)))
+        (`(t . t)
+         (treemacs-git-mode 'deferred))
+        (`(t . _)
+         (treemacs-git-mode 'simple)))
+
+      (treemacs-hide-gitignored-files-mode nil))
+
+    :bind
+    (:map global-map
+          ("C-c t"   . treemacs))
+
+    :hook
+    (projectile-after-switch-project . treemacs-add-and-display-current-project-exclusively)
+    )
+
+  (use-package treemacs-projectile
+    :after (treemacs projectile)
+    :ensure t)
+
+  (use-package treemacs-icons-dired
+    :hook (dired-mode . treemacs-icons-dired-enable-once)
+    :ensure t)
+#+end_src
+
+* Text editing config
+** General
+#+begin_src emacs-lisp
+  ;; Disalbe blinking cursor
+  (blink-cursor-mode -1)
+
+  ;; Highlight current line
+  (global-hl-line-mode 1)
+
+  ;; Overwrite the content of selected regions when typing
+  (delete-selection-mode 1)
+
+  ;; Single spaced sentences
+  (setq sentence-end-double-space nil)
+
+  ;; Disable tabs and set them to 4 spaces
+  (setq-default indent-tabs-mode nil
+                tab-width 4)
+
+  ;; Update buffer if file changes outside of emacs
+  (setq-default global-auto-revert-mode t
+                global-auto-revert-non-file-buffers t)
+
+  ;; Enable case transformation functions
+  (put 'downcase-region 'disabled nil)
+  (put 'upcase-region 'disabled nil)
+
+  ;; C-r for string replacement
+  (bind-key "C-r" 'replace-string)
+
+  ;; Suppress the scratch buffer's message
+  (setq initial-scratch-message nil)
+#+end_src
+
+** Fonts
+*** Configuration for emacs daemon
+#+begin_src emacs-lisp
+
+  ;; ==========================================================
+  ;;  Custom font faces configuration
+  ;; ==========================================================
+  (defun my/set-global-font-faces ()
+    (message "Setting font faces!")
+
+    ;; Fira Code for text editor
+    (set-face-attribute 'default nil
+                        :font "FiraCode Nerd Font-11"
+                        :weight 'normal
+                        :width 'normal)
+
+    ;; Fixed pitch font
+    (set-face-attribute 'fixed-pitch nil
+                        :font "FiraCode Nerd Font-11"
+                        :weight 'normal
+                        :width 'normal)
+
+    ;; Variable pitch font
+    (set-face-attribute 'variable-pitch nil
+                        :font "Montserrat-13"
+                        :weight 'normal
+                        :width 'normal))
+
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+                (lambda (frame)
+                  (with-selected-frame frame
+                    (my/set-global-font-faces))))
+    (my/set-global-font-faces))
+  ;; ==========================================================
+  ;;  End custom font faces configuration
+  ;; ==========================================================
+#+end_src
+
+*** Nerd icons
+#+begin_src emacs-lisp
+  (use-package nerd-icons
+    :ensure t
+    :custom
+    ;; The Nerd Font you want to use in GUI
+    ;; "Symbols Nerd Font Mono" is the default and is recommended
+    ;; but you can use any other Nerd Font if you want
+    (nerd-icons-font-family "Symbols Nerd Font Mono")
+    )
+#+end_src
+
+** Highlighting
+*** Symbols
+#+begin_src emacs-lisp
+  (use-package highlight-symbol
+    :ensure t
+    :config
+    ;; ==========================================================
+    ;;  Custom font faces configuration
+    ;; ==========================================================
+    (defun my/set-highlight-symbol-font-faces ()
+      (message "Setting font faces!")
+
+      (set-face-attribute 'highlight-symbol-face nil
+                          :background "default"
+                          :foreground "#FA009A"))
+
+    (if (daemonp)
+        (add-hook 'after-make-frame-functions
+                  (lambda (frame)
+                    (with-selected-frame frame
+                      (my/set-highlight-symbol-font-faces))))
+      (my/set-highlight-symbol-font-faces))
+    ;; ==========================================================
+    ;;  End custom font faces configuration
+    ;; ==========================================================
+
+    (setq highlight-symbol-idle-delay 0
+          highlight-symbol-on-navigation-p t)
+    :bind
+    (("C-<f3>" . highlight-symbol)
+     ("<f3>" . highlight-symbol-next)
+     ("S-<f3>" . highlight-symbol-prev)
+     ("M-<f3>" . highlight-symbol-query-replace)))
+#+end_src
+
+*** Bookmarks
+#+begin_src emacs-lisp
+  (use-package bm
+    :ensure t
+    :demand t
+    :init
+    ;; Restore on load
+    (setq bm-restore-repository-on-load t)
+
+    :config
+    (require 'bm-sync)
+    ;; Save bookmarks
+    (setq-default bm-buffer-persistence t)
+
+    ;; Loading the repository from file when on start up
+    (add-hook 'after-init-hook 'bm-repository-load)
+    ;; Saving bookmarks
+    (add-hook 'kill-buffer-hook #'bm-buffer-save)
+
+    ;; Saving the repository to file when on exit.
+    ;; kill-buffer-hook is not called when Emacs is killed, so we
+    ;; must save all bookmarks first.
+    (add-hook 'kill-emacs-hook #'(lambda nil
+                                   (bm-buffer-save-all)
+                                   (bm-repository-save)))
+
+    ;; The `after-save-hook' is not necessary to use to achieve persistence,
+    ;; but it makes the bookmark data in repository more in sync with the file
+    ;; state.
+    (add-hook 'after-save-hook #'bm-buffer-save)
+
+    ;; Restoring bookmarks
+    (add-hook 'find-file-hooks   #'bm-buffer-restore)
+    (add-hook 'after-revert-hook #'bm-buffer-restore)
+
+    ;; The `after-revert-hook' is not necessary to use to achieve persistence,
+    ;; but it makes the bookmark data in repository more in sync with the file
+    ;; state. This hook might cause trouble when using packages
+    ;; that automatically reverts the buffer (like vc after a check-in).
+    ;; This can easily be avoided if the package provides a hook that is
+    ;; called before the buffer is reverted (like `vc-before-checkin-hook').
+    ;; Then new bookmarks can be saved before the buffer is reverted.
+    ;; Make sure bookmarks is saved before check-in (and revert-buffer)
+    (add-hook 'vc-before-checkin-hook #'bm-buffer-save)
+
+    ;; ==========================================================
+    ;;  Custom font faces configuration
+    ;; ==========================================================
+    (defun my/set-bm-font-faces ()
+      (message "Setting font faces!")
+
+      ;; Set all bookmark types to the same color face
+      (set-face-attribute 'bm-persistent-face nil
+                          :background 'unspecified
+                          :foreground 'unspecified
+                          :inherit bm-face)
+      (set-face-attribute 'bm-fringe-persistent-face nil
+                          :background 'unspecified
+                          :foreground 'unspecified
+                          :inherit bm-face))
+
+    (if (daemonp)
+        (add-hook 'after-make-frame-functions
+                  (lambda (frame)
+                    (with-selected-frame frame
+                      (my/set-bm-font-faces))))
+      (my/set-bm-font-faces))
+    ;; ==========================================================
+    ;;  End custom font faces configuration
+    ;; ==========================================================
+
+    :bind
+    (("C-<f2>" . bm-toggle)
+     ("<f2>" . bm-next)
+     ("S-<f2>" . bm-previous)))
+#+end_src
+
+** Multi-line editing
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :ensure t
+    :bind (("C-e" . mc/edit-lines)))
+#+end_src
+
+** GUI+terminal Clipboard support
+#+begin_src emacs-lisp
+  (use-package xclip
+    :elpaca (xclip :host github :repo "emacsmirror/xclip" :branch "master")
+    :ensure t
+    :config
+    (xclip-mode 1))
+
+  (use-package clipetty
+    :ensure t
+    :hook (after-init . global-clipetty-mode)
+    :init
+    (setenv "SSH_TTY"))
+#+end_src
+
+** Auto save
+#+begin_src emacs-lisp
+  (auto-save-visited-mode 1)
+  (setq auto-save-visited-interval 1)
+#+end_src
+
+** Spell checking
+#+begin_src emacs-lisp
+  (use-package ispell
+    :no-require t
+    :config
+    (setq ispell-dictionary "american"
+          ispell-highlight-face (quote flyspell-incorrect)
+          ispell-silently-savep t)
+    :bind ("C-c s" . ispell-region))
+#+end_src
+
+* Org mode
+** Setup
+#+begin_src emacs-lisp
+  ;;  Custom font faces configuration
+  (defun my/set-org-font-faces ()
+    (message "Setting Org mode font faces!")
+
+    (require 'org-indent)
+
+    (dolist (face '((org-level-1 . 1.7)
+                    (org-level-2 . 1.25)
+                    (org-level-3 . 1.1)
+                    (org-level-4 . 1.07)
+                    (org-level-5 . 1.05)
+                    (org-level-6 . 1.03)
+                    (org-level-7 . 1.01)
+                    (org-level-8 . 1.0)))
+      (set-face-attribute (car face) nil :font "Montserrat" :weight 'regular :height (cdr face)))
+
+    ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+    (set-face-attribute 'org-block nil :foreground 'unspecified :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+    (set-face-attribute 'org-table nil :inherit '(org-hide fixed-pitch))
+    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+                (lambda (frame)
+                  (with-selected-frame frame
+                    (my/set-org-font-faces))))
+    (my/set-org-font-faces))
+
+  ;; Org-mode loading hook
+  (defun my/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (auto-fill-mode 0)
+    (visual-line-mode 1)
+    (org-super-agenda-mode t)
+    (org-tidy-mode t))
+
+  (use-package org
+    :hook (org-mode . my/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▾"
+          org-hide-emphasis-markers t
+          org-log-done 'time
+          org-table-convert-region-max-lines 20000
+          org-support-shift-select 'always
+          org-return-follows-link t)
+    ;; Remove the underline from the heading ellipsis
+    (set-face-attribute 'org-ellipsis nil :underline nil)
+
+    :bind
+    (("C-c o a" . (lambda (&optional arg) (interactive)
+                    (org-agenda arg "a")))))
+#+end_src
+
+** Extensions
+*** Org bullets
+#+begin_src emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :after org
+    :hook (org-mode . org-bullets-mode)
+    :custom
+    (org-bullets-bullet-list '("◉" "◎" "○" "●" "◆" "◆" "◆"))
+    :config
+    ;; Replace list hyphens with dots
+    (font-lock-add-keywords 'org-mode
+                            '(("^ *\\([-]\\) "
+                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+    )
+#+end_src
+
+*** Org-roam
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :ensure t
+    :after (org)
+    :custom
+    (org-roam-directory (file-truename "~/Documents/org-files/docs/"))
+    :bind (("C-c o l" . org-roam-buffer-toggle)
+           ("C-c o f" . org-roam-node-find)
+           ("C-c o g" . org-roam-graph)
+           ("C-c o i" . org-roam-node-insert)
+           ("C-c o c" . org-roam-capture)
+           ;; Dailies
+           ("C-c o j" . org-roam-dailies-capture-today))
+    :config
+    (setq org-roam-directory "~/Documents/org-files/docs/"
+          org-roam-db-location "~/Documents/org-files/org-roam/org-roam.db"
+          org-id-locations-file "~/Documents/org-files/org-roam/org-id-locations"
+          ;; If you're using a vertical completion framework, you might want a more informative completion interface
+          org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+
+    (org-roam-db-autosync-mode)
+    ;; If using org-roam-protocol
+    (require 'org-roam-protocol))
+#+end_src
+
+*** Org-modern
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :ensure t)
+#+end_src
+
+*** Org-tidy
+#+begin_src emacs-lisp
+  (use-package org-tidy
+    :ensure t
+    :config
+    (setq org-tidy-protect-overlay nil)
+    :hook
+    (org-mode . org-tidy-mode))
+#+end_src
+
+*** Org-agenda
+**** Setup
+#+begin_src emacs-lisp
+  (defun my/org-agenda-startup-hook ()
+    "Hook that runs when org-agenda is opened"
+    (org-modern-mode))
+
+  (use-package org-agenda
+    :after nerd-icons
+    :config
+
+    (setq org-agenda-span 1
+          org-agenda-start-day "+0d"
+          org-agenda-skip-timestamp-if-done t
+          org-agenda-skip-deadline-if-done t
+          org-agenda-skip-scheduled-if-done t
+          org-agenda-skip-scheduled-if-deadline-is-shown t
+          org-agenda-skip-timestamp-if-deadline-is-shown t
+
+          org-agenda-window-setup 'only-window
+
+          org-agenda-hide-tags-regexp ".*"
+
+          org-agenda-prefix-format '((agenda . "  %?-2i %t ")
+                                     (todo . " %i %-12:c")
+                                     (tags . " %i %-12:c")
+                                     (search . " %i %-12:c"))
+
+          org-agenda-category-icon-alist
+          `(("Computer" ,(list (nerd-icons-faicon "nf-fa-laptop")) nil nil :ascent center)
+            ("Personal" ,(list (nerd-icons-faicon "nf-fa-face_smile")) nil nil :ascent center)
+            ("Family" ,(list (nerd-icons-faicon "nf-fa-group")) nil nil :ascent center)
+            ;; ("Family.s" ,(list (nerd-icons-faicon "home" :v-adjust 0.005)) nil nil :ascent center)
+            ;; ("Producer.p" ,(list (nerd-icons-faicon "youtube-play" :height 0.9)) nil nil :ascent center)
+            )
+
+          org-agenda-files (directory-files-recursively "~/Documents/org-files/" "\\agenda.org$")))
+#+end_src
+
+**** Org-super-agenda
+#+begin_src emacs-lisp
+  (use-package org-super-agenda
+    :ensure t
+    :after org-agenda
+
+    :config
+
+    (setq org-super-agenda-groups
+          '(;; Each group has an implicit boolean OR operator between its selectors.
+            (:name " Overdue "  ; Optionally specify section name
+                   :scheduled past
+                   :order 2
+                   :face 'error)
+
+            (:name "Computer "
+                   :and(:not (:tag "event"))
+                   :order 3)
+
+            (:name "Personal "
+                   :and(:not (:tag "event"))
+                   :order 3)
+
+            (:name "Family "
+                   :and(:not (:tag "event"))
+                   :order 3)
+
+            (:name " Today "  ; Optionally specify section name
+                   :time-grid t
+                   :date today
+                   :scheduled today
+                   :order 1
+                   :face 'warning)
+            ))
+
+    ;; :hook (org-agenda . (org-super-agenda-mode t))
+    )
+#+end_src
+
+*** Org-present (Presentations)
+#+begin_src emacs-lisp
+  (defun my/org-present-start ()
+    "setup the environment for presentation."
+
+    ;; theme and ui state
+    (disable-theme 'zenburn)
+    (load-theme 'doom-palenight t)
+    (read-only-mode 1)
+    (doom-modeline-mode -1)
+    (setq-local mode-line-format nil)
+
+    ;; layout and buffer display
+    (org-indent-mode -1)
+    (org-display-inline-images)
+    (setq visual-fill-column-width 95
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1)
+    (visual-line-mode 1)
+    (setq header-line-format " ")
+    (setq org-hide-emphasis-markers t)
+
+    ;; typography and face attributes
+    (set-face-attribute 'default nil :font "JetBrains Mono Nerd Font" :weight 'light :height 120)
+    (set-face-attribute 'fixed-pitch nil :font "JetBrains Mono Nerd Font" :weight 'light :height 130)
+    (set-face-attribute 'variable-pitch nil :font "Iosevka Aile" :weight 'light :height 1.3)
+    (set-face-attribute 'org-document-title nil :font "Iosevka Aile" :weight 'bold :height 1.3)
+
+    ;; scale up faces via remapping
+    (setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
+                                       (header-line (:height 4.0) variable-pitch)
+                                       (org-document-title (:height 1.75) org-document-title)
+                                       (org-code (:height 1.55) org-code)
+                                       (org-verbatim (:height 1.55) org-verbatim)
+                                       (org-block (:height 1.25) org-block)
+                                       (org-block-begin-line (:height 0.7) org-block)))
+
+    ;; resize org headings
+    (dolist (face '((org-level-1 . 1.2)
+                    (org-level-2 . 1.1)
+                    (org-level-3 . 1.05)
+                    (org-level-4 . 1.0)
+                    (org-level-5 . 1.1)
+                    (org-level-6 . 1.1)
+                    (org-level-7 . 1.1)
+                    (org-level-8 . 1.1)))
+      (set-face-attribute (car face) nil :font "Iosevka Aile" :weight 'medium :height (cdr face)))
+
+    ;; ensure technical faces inherit fixed-pitch
+    (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-formula nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+    (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+    (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+
+  (defun my/org-present-end ()
+    "restore the environment after presentation."
+
+    ;; theme and ui state
+    (disable-theme 'doom-palenight)
+    (load-theme 'zenburn t)
+    (read-only-mode -1)
+    (kill-local-variable 'mode-line-format)
+    (doom-modeline-mode 1)
+
+    ;; layout and buffer display
+    (org-indent-mode 1)
+    (visual-fill-column-mode -1)
+    (visual-line-mode -1)
+    (setq header-line-format nil)
+
+    ;; restore typography
+    (set-face-attribute 'default nil :font "FiraCode Nerd Font" :weight 'normal :height 110)
+    (set-face-attribute 'fixed-pitch nil :font "FiraCode Nerd Font" :weight 'normal :height 110)
+    (set-face-attribute 'variable-pitch nil :font "Montserrat" :weight 'normal :height 130)
+    (setq-local face-remapping-alist nil))
+
+  (use-package org-present
+    :ensure t
+    :bind (("C-c o p" . org-present)
+           :map org-present-mode-keymap
+           ("C-c C-c" . org-present-quit)
+           ("<left>"  . org-present-prev)
+           ("<right>" . org-present-next))
+    :hook
+    ((org-present-mode . my/org-present-start)
+     (org-present-mode-quit . my/org-present-end)))
+#+end_src
+
+*** Casual (Keyboard driven menus)
+#+begin_src emacs-lisp
+  (use-package casual
+    :ensure t
+    :custom
+    ;; Enable Unicode symbols in the menus
+    (casual-lib-use-unicode t)
+    ;; Recommended alignment setting when using Unicode
+    (transient-align-variable-pitch t)
+    ;; Change to t to hide the explicit C-g and C-q prompts at the bottom of menus
+    (casual-lib-hide-navigation nil)
+
+    :config
+    ;; defer execution until org is loaded to ensure keymaps exist
+    (with-eval-after-load 'org
+      ;; bind the casual org main menu
+      (keymap-set org-mode-map "C-o" #'casual-org-tmenu)
+      ;; bind the casual org table formula edit menu
+      (keymap-set org-table-fedit-map "C-o" #'casual-org-table-fedit-tmenu)))
+#+end_src
+
+* Project management config
+** Projectile
+#+begin_src emacs-lisp
+  (use-package projectile
+    :ensure t
+    :diminish projectile-mode
+    :commands (projectile-mode projectile-switch-project)
+
+    :bind
+    (("C-c p p" . projectile-switch-project)
+     ("C-c p s" . projectile-ag)
+     ("C-c p f" . projectile-find-file)
+     ("C-c p c" . projectile-compile-project)
+     ("C-c p r" . projectile-run-project))
+
+    :config
+    (setq projectile-keymap-prefix (kbd "C-c p")
+          projectile-mode-line '(:eval (format "%s" (projectile-project-name))))
+    (projectile-global-mode t)
+    (setq projectile-enable-caching t
+          projectile-switch-project-action 'projectile-dired
+          projectile-file-exists-remote-cache-expire nil
+          ;; Workarounds for the fd commands: https://github.com/bbatsov/projectile/issues/1788
+          projectile-generic-command "fdfind . -0 --type f --color=never"
+          projectile-git-fd-args "-H -0 -E .git -tf"))
+#+end_src
+
+** Wgrep (Writable grep for project-wide refactoring)
+#+begin_src emacs-lisp
+  (use-package wgrep
+    :ensure t
+    :commands (wgrep-change-to-wgrep-mode)
+    :config
+    (setq wgrep-auto-save-buffer t))
+#+end_src
+
+* Emacs dashboard page config (Welcome page)
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+
+    :bind
+    (("C-c d" . (lambda (&optional arg) (interactive)
+                  (switch-to-buffer "*dashboard*")
+                  (dashboard-next-section))))
+
+    :config
+    (dashboard-setup-startup-hook)
+
+    (add-to-list 'dashboard-items '(agenda) t)
+
+    (setq dashboard-banner-logo-title "[WELCOME TO EMACS]"
+          dashboard-startup-banner (concat user-emacs-directory "config/resources/emacs-banner.png")
+          dashboard-items '((recents  . 10)
+                            (bookmarks . 3)
+                            (projects . 3)
+                            (agenda    . 5))
+
+          dashboard-projects-backend 'projectile
+          dashboard-path-style 'truncate-middle
+          dashboard-path-max-length 80
+          dashboard-show-shortcuts nil
+          dashboard-set-init-info t
+          dashboard-display-icons-p t
+          dashboard-icon-type 'nerd-icons
+          dashboard-set-heading-icons t
+          dashboard-set-file-icons t
+          dashboard-set-navigator t
+          dashboard-navigation-cycle t
+
+
+          ;; ==========================
+          ;; Agenda entries configuration
+          ;; ==========================
+          dashboard-item-names '(("Agenda for today:"           . "Today's agenda:")
+                                 ("Agenda for the coming week:" . "Agenda:"))
+
+          dashboard-week-agenda t
+
+          dashboard-agenda-prefix-format " • %i %-10s "
+          ;; ==========================
+
+          dashboard-heading-icons '((recents   . "nf-oct-history")
+                                    (bookmarks . "nf-oct-bookmark")
+                                    (agenda    . "nf-oct-calendar")
+                                    (projects  . "nf-oct-briefcase")
+                                    (registers . "nf-oct-link"))
+
+          dashboard-item-shortcuts '((recents   . "r")
+                                     (bookmarks . "b")
+                                     (projects  . "p")
+                                     (agenda    . "a")
+                                     (registers . "e"))
+
+          dashboard-set-footer t
+          dashboard-footer-messages '("Emacs config at https://github.com/dartzon/dotfiles")
+
+          ;; Prevent these paths from showing in the recent files section.
+          recentf-exclude '("~/.emacs.d/config/*"
+                            "~/.emacs.d/data/*"
+                            "~/.emacs.d/.saves/*"
+                            "~/Documents/org-files/*"
+                            "~/.mail/*")
+
+          ;; Show Dashboard in frames created with emacsclient -c.
+          initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name))
+
+          ;;(if (< (length command-line-args) 2)
+          ;;    initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name))))
+          ))
+#+end_src
+
+* IDE config
+** Core Editing Enhancements
+*** General Purpose Hooks
+#+begin_src emacs-lisp
+  (defun my/apply-general-dev-config ()
+    ;; Add a new line at the end of files if one isn't there already when saving
+    (setq-local require-final-newline t)
+
+    ;; Enable automatic pairing of delimiters
+    (electric-pair-local-mode 1)
+
+    ;; Enable automatic indentation on newline
+    (electric-indent-local-mode 1))
+
+  (add-hook 'prog-mode-hook #'my/apply-general-dev-config)
+#+end_src
+
+*** Whitespace Management
+#+begin_src emacs-lisp
+  (defun my/apply-dev-whitespace-config ()
+    (setq-local
+     whitespace-line-column 130
+     whitespace-style '(face trailing lines-tail tabs tab-mark)
+     whitespace-display-mappings
+     '((trailing-mark   ?\     [?\u00B7]     [?.])
+       (tab-mark     ?\t    [?\u21E5 ?\t] [?\\ ?\t])))
+    (whitespace-mode)
+    (set-face-attribute 'whitespace-line nil
+                        :weight 'extrabold
+                        :box '(:line-width (2 . 2)
+                                           :color "grey75")))
+
+  (add-hook 'prog-mode-hook #'my/apply-dev-whitespace-config)
+#+end_src
+
+*** Advanced Code Commenting
+#+begin_src emacs-lisp
+  (use-package evil-nerd-commenter
+    :ensure t
+    :bind ("C-*" . evilnc-comment-or-uncomment-lines)
+    )
+#+end_src
+
+** Code Completion & Snippets
+*** Company (Code Completion)
+#+begin_src emacs-lisp
+  (use-package company
+    :ensure t
+    :hook (prog-mode . company-mode)
+    :init (setq company-idle-delay 0.3)
+    :config (company-mode t)
+    :bind ("TAB" . company-complete)
+    )
+#+end_src
+
+*** Yasnippet (Code Snippet Expansion)
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :hook (prog-mode . yas-minor-mode)
+    :config
+    (yas-global-mode 1))
+#+end_src
+
+** Code Quality & Style
+*** Flycheck (On-the-fly Linting)
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    :init
+    ;; Only check the current buffer when it's saved.
+    (setq flycheck-global-modes '(c-mode c++-mode c-or-c++-mode c-ts-mode c++-ts-mode c-or-c++-ts-mode)
+          flycheck-check-syntax-automatically '(mode-enabled save))
+    (global-flycheck-mode))
+#+end_src
+
+*** EditorConfig (Consistent Project Styles)
+#+begin_src emacs-lisp
+  (use-package editorconfig
+    :ensure t
+    :config
+    (editorconfig-mode 1))
+#+end_src
+
+*** Clang-format (C/C++ Formatting)
+#+begin_src emacs-lisp
+  (use-package clang-format+
+    :ensure t
+    :elpaca (clang-format+ :host github :repo "SavchenkoValeriy/emacs-clang-format-plus" :branch "master")
+    :config
+    ;; Format only modified git "hunks" on save.
+    ;; Other options include 'lines or 'whole-buffer.
+    (setq clang-format+-context 'modification)
+
+    :hook (c-mode c++-mode c-or-c++-mode c-ts-mode c++-ts-mode c-or-c++-ts-mode)
+    )
+#+end_src
+
+** Syntax & Display
+*** Tree-Sitter (Enhanced Syntax Highlighting)
+#+begin_src emacs-lisp
+  (use-package tree-sitter
+    :ensure t
+    :config
+    (global-tree-sitter-mode)
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+  (use-package tree-sitter-langs
+    :ensure t
+    :after tree-sitter)
+#+end_src
+
+*** Highlight/preview color formats
+#+begin_src emacs-lisp
+  (use-package colorful-mode
+    :ensure t
+
+    :init
+    (global-colorful-mode 1)
+
+    :custom
+    (colorful-use-prefix t)
+    (colorful-only-strings 'only-prog)
+    (css-fontify-colors nil)
+
+    :config
+    (add-to-list 'global-colorful-modes 'helpful-mode)
+    (add-to-list 'global-colorful-modes 'conf-mode)
+    (add-to-list 'global-colorful-modes 'org-mode)
+    )
+#+end_src
+
+*** Rainbow Delimiters
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :elpaca (rainbow-delimiters :host github :repo "emacsmirror/rainbow-delimiters" :branch "master")
+    :hook (prog-mode conf-mode))
+#+end_src
+
+*** Language-Specific Highlighting
+**** Bitbake
+#+begin_src emacs-lisp
+  (use-package bb-mode
+    :ensure t
+    :elpaca (bb-mode :host github :repo "mferland/bb-mode" :branch "master")
+    :init
+    (setq auto-mode-alist (cons '("\\.bb$" . bb-mode) auto-mode-alist)
+          auto-mode-alist (cons '("\\.inc$" . bb-mode) auto-mode-alist)
+          auto-mode-alist (cons '("\\.bbappend$" . bb-mode) auto-mode-alist)
+          auto-mode-alist (cons '("\\.bbclass$" . bb-mode) auto-mode-alist)
+          auto-mode-alist (cons '("\\.conf$" . bb-mode) auto-mode-alist)))
+#+end_src
+
+**** Yaml
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :ensure t
+    :config
+    (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+#+end_src
+
+**** HCL (Hashicorp config language)
+#+begin_src emacs-lisp
+  (use-package hcl-mode
+    :ensure t
+    :config
+    (setq hcl-indent-level 4)
+    )
+#+end_src
+
+**** Protobuf
+#+begin_src emacs-lisp
+  (use-package protobuf-mode
+    :ensure t
+    :init
+    (setq auto-mode-alist (cons '("\\.proto$" . protobuf-mode) auto-mode-alist)) )
+#+end_src
+
+** Version Control
+*** Magit (Git Interface)
+#+begin_src emacs-lisp
+  ;; Ensures that transient is always the latest version to accommodate magit.
+  (use-package transient
+    :elpaca (transient :host github :repo "emacsmirror/transient" :branch "master")
+    :ensure t
+    :config
+    (setq transient-history-file (concat user-emacs-directory ".saves/transient-history.el"))
+    )
+
+  (use-package magit
+    :after transient
+    :ensure t
+
+    :config
+    (setq git-commit-summary-max-length 70 ;; 70 characters for commit titles
+          git-commit-fill-column 80) ;;  80 characters for the commit body
+
+    :hook (git-commit-setup . (lambda () (setq-local fill-column 80)))
+    :bind ("C-c g" . magit-status))
+#+end_src
+
+*** Ediff (Diff Tool)
+#+begin_src emacs-lisp
+  (use-package git-difftool
+    :load-path "config/external"
+    :init
+    (setq ediff-keep-variants nil
+          ediff-make-buffers-readonly-at-startup nil
+          ediff-show-clashes-only t
+          ediff-split-window-function 'split-window-horizontally
+          ediff-window-setup-function 'ediff-setup-windows-plain)
+    )
+#+end_src
+
+** Project Utilities
+*** New Source File Templates
+#+begin_src emacs-lisp
+  (use-package file-template
+    :elpaca (file-template :host github :repo "emacsmirror/file-template" :branch "master")
+    :ensure t
+    :init
+    (setq-default file-template-paths
+                  `(,(concat user-emacs-directory "config/resources/filetemplates/")))
+    (setq file-template-insert-automatically t
+          file-template-search-current-dir nil)
+    :config
+    (add-hook 'find-file-not-found-functions #'file-template-find-file-not-found-hook 'append)
+    (add-to-list 'file-template-mapping-alist '("\\.js$" . "template.js"))
+    )
+
+  ;; (use-package auto-insert
+  ;;   :ensure nil ;; Built-in to Emacs
+  ;;   :hook (find-file . auto-insert)
+  ;;   :config
+  ;;   ;; Don't prompt "Do you want to insert?" just do it.
+  ;;   (setq auto-insert-query nil)
+
+  ;;   (defun my/auto-insert-yasnippet ()
+  ;;     "Expand the snippet named '__init__' if it exists for the current mode."
+  ;;     (let ((template (yas-lookup-snippet "__init__")))
+  ;;       (when template
+  ;;         (yas-expand-snippet (yas--template-content template)))))
+
+  ;;   ;; Register the file extensions to the action
+  ;;   (define-auto-insert "\\.cpp\\'" #'my/auto-insert-yasnippet)
+  ;;   (define-auto-insert "\\.rs\\'"  #'my/auto-insert-yasnippet)
+  ;;   ;; Add more extensions here as needed...
+  ;;   )
+
+#+end_src
+
+** Programming
+*** Global settings
+#+begin_src emacs-lisp
+  ;; Ensure tab-width matches for all programming modes
+  (add-hook 'prog-mode-hook (lambda () (setq tab-width 4)))
+#+end_src
+
+*** LSP (Language server protocol)
+#+begin_src emacs-lisp
+  ;; LSP mode
+  (use-package lsp-mode
+    :ensure t
+    :init
+    ;; Performance: use plists for deserialization.
+    (setenv "LSP_USE_PLISTS" "true")
+    (setq lsp-use-plists t)
+
+    ;; Settings: standard lsp-mode settings
+    (setq lsp-keymap-prefix "C-c l"
+          lsp-completion-provider :capf
+          lsp-keep-workspace-alive nil
+          ;; Core performance tuning
+          lsp-log-io nil
+          lsp-idle-delay 0.500
+          ;; UI tweaks
+          lsp-headerline-breadcrumb-enable nil
+          lsp-enable-on-type-formatting nil)
+
+    :config
+    ;; Lsp-booster integration
+    ;; Advice to wrap the lsp server command with emacs-lsp-booster
+    (defun lsp-booster--advice-json-parse (orig-fn &rest args)
+      "Try to parse bytecode instead of json."
+      (or (when (equal (following-char) ?#)
+            (let ((bytecode (read (current-buffer))))
+              (when (byte-code-function-p bytecode)
+                (funcall bytecode))))
+          (apply orig-fn args)))
+
+    (advice-add (if (progn (require 'json)
+                           (fboundp 'json-parse-buffer))
+                    'json-parse-buffer
+                  'json-read)
+                :around
+                #'lsp-booster--advice-json-parse)
+
+    (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+      "Prepend emacs-lsp-booster to lsp cmd."
+      (let ((orig-result (funcall old-fn cmd test?)))
+        (if (and (not test?)                             ;; for check-if-supported
+                 (not (file-remote-p default-directory)) ;; see lsp-booster#11
+                 (not (member (car orig-result) '("emacs-lsp-booster" "gdb" "lldb")))) ;; avoid loops
+            (cons "emacs-lsp-booster" orig-result)
+          orig-result)))
+    (advice-add 'lsp-resolve-final-command-fn :around #'lsp-booster--advice-final-command)
+
+    (general-define-key
+     :keymaps 'lsp-mode-map
+     ;; --- Navigation (The "Go" keys) ---
+     "M-." 'lsp-find-definition       ;; Go to definition (Standard Emacs key)
+     "M-," 'lsp-pop-find-definition   ;; Go back (Return to where you came from)
+     "M-?" 'lsp-find-references       ;; Find usages (Matches your Rust config)
+     "M-j" 'consult-lsp-symbols       ;; Jump to symbol in file (Better than imenu)
+
+     ;; --- Actions (The "Do" keys) ---
+     "C-c r" 'lsp-rename              ;; r for Rename
+     "C-c a" 'lsp-execute-code-action ;; a for Action (Apply fixes, generate code)
+     "C-c h" 'lsp-describe-thing-at-point ;; h for Hover (Show documentation)
+
+     ;; --- Errors (Flycheck integration) ---
+     "C-c e n" 'flycheck-next-error     ;; e n = Error Next
+     "C-c e p" 'flycheck-previous-error ;; e p = Error Previous
+     "C-c e l" 'flycheck-list-errors    ;; e l = Error List
+     )
+
+    :hook (
+           (lsp-mode . lsp-enable-which-key-integration)
+           ((c-mode c++-mode c-ts-mode c++-ts-mode rustic-mode) . lsp-deferred)
+           )
+    )
+
+  ;; LSP UI
+  (use-package lsp-ui
+    :ensure t
+    :after lsp-mode
+    :commands lsp-ui-mode
+    :custom
+    (lsp-ui-doc-delay 1)
+    (lsp-ui-doc-position 'at-point)
+    (lsp-ui-sideline-show-hover nil) ;; Reduces visual noise
+    (lsp-ui-sideline-show-diagnostics t)
+    (lsp-ui-peek-enable t))
+
+  (use-package lsp-treemacs
+    :ensure t
+    :after (lsp-mode treemacs)
+    :config (lsp-treemacs-sync-mode 1)
+    ;; Add keybindings within the treemacs buffer
+    (with-eval-after-load 'treemacs
+      (define-key treemacs-mode-map (kbd "s") #'lsp-treemacs-symbols)
+      (define-key treemacs-mode-map (kbd "e") #'lsp-treemacs-errors-list)))
+
+#+end_src
+
+*** C/C++
+**** Set global C/C++/C-ts/C++-ts mode variable
+#+begin_src emacs-lisp
+  (defvar my/c-c++-modes '(c-mode c++-mode c-or-c++-mode c-ts-mode c++-ts-mode c-or-c++-ts-mode)
+    "A list of major modes for C and C++ development.")
+#+end_src
+
+**** Indentation
+#+begin_src emacs-lisp
+  ;; Global C/C++ indentation settings
+  (setq-default c-basic-offset 4
+                ;; This variable controls indentation for c-ts-mode and c++-ts-mode
+                c-ts-mode-indent-offset 4)
+
+#+end_src
+**** Customize LSP for C/C++
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :defer t
+
+    :init
+    (dolist (mode my/c-c++-modes)
+      (add-hook (intern (format "%s-hook" mode)) #'lsp-deferred))
+    :custom
+    (lsp-clients-clangd-args '("-j=4"
+                               "--background-index"
+                               "--clang-tidy"
+                               "--completion-style=detailed"
+                               "--header-insertion=iwyu"
+                               "--pch-storage=memory")))
+#+end_src
+
+**** Doxygen
+#+begin_src emacs-lisp
+  (use-package doxymacs
+    :ensure t
+    :elpaca (doxymacs :host github :repo "pniedzielski/doxymacs" :branch "main")
+    :init
+    ;; Automatically enable doxymacs for all C/C++ modes
+    (dolist (mode my/c-c++-modes)
+      (add-hook (intern (format "%s-hook" mode)) #'doxymacs-mode))
+
+    (setq doxymacs-author-name           "Othmane Ait El Cadi"
+          doxymacs-author-email          "oaitelcadi@automncompany.com"
+          doxymacs-doxygen-style         "C++"
+          doxymacs-electric-doxygen-mode t
+          doxymacs-use-external-xml-parser t
+          doxymacs-external-xml-parser-executable (expand-file-name "data/doxygen-parser/" user-emacs-directory))
+    )
+#+end_src
+
+*** Rust
+#+begin_src emacs-lisp
+  (use-package rustic
+    :ensure t
+    :custom
+    (rustic-rustfmt-args "+nightly")
+
+    :config
+    ;; Explicitly set lsp-mode as the client
+    (setq rustic-lsp-client 'lsp-mode
+          ;; Format on save
+          rustic-compile-command "just"
+          rustic-format-on-save t
+          rustic-mode-use-ts t
+          lsp-rust-analyzer-cargo-watch-command "clippy"
+          lsp-enable-on-type-formatting nil)
+
+    :hook (rustic-mode . (lambda ()
+                           ;; Disable file operations edits (renaming) for Rust
+                           (setq-local lsp-apply-edits-after-file-operations nil)
+                           ;; Enable inlay hints only for Rust buffers
+                           (setq-local lsp-inlay-hint-enable t)))
+    )
+
+  ;; Support for Rust's Just build files
+  (use-package just-mode
+    :ensure t)
+#+end_src
+
+** Debugging
+*** Integrated Debugger (DAP)
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    :ensure t
+    :after lsp-mode
+
+    :custom
+    (dap-lldb-debug-program '("/usr/bin/lldb-dap"))
+
+
+    :config
+    ;; Load the adapters for c/c++ and rust
+    (require 'dap-gdb-lldb)  ;; for cppdbg / gdb
+    (require 'dap-lldb)      ;; for lldb / codelldb
+    (require 'dap-hydra)     ;; for command mode menu
+
+    (dap-mode 1)
+    (dap-ui-mode -1)
+    (tooltip-mode -1)
+
+    ;; The modes you want dap-mode to manage automatically
+    (setq dap-auto-configure-features '(sessions locals controls tooltip)
+          ;; Fix for lldb-dap (sometimes required depending on version/distro)
+          dap-lldb-debug-program '("lldb-dap"))
+
+    ;; Automatically triggers the hydra menu when the debugger hits a breakpoint
+    (add-hook 'dap-stopped-hook
+              (lambda (arg)
+                (call-interactively #'dap-hydra)))
+
+    ;; Open the debugger menu
+    (general-define-key
+     :keymaps 'lsp-mode-map
+     :prefix lsp-keymap-prefix
+     "d" '(dap-hydra t :which-key "debugger")))
+#+end_src
+
+* LLM
+** Google Gemini
+#+begin_src emacs-lisp
+  (use-package gptel
+    :ensure t
+    :init
+    (setq gptel-backend (gptel-make-gemini "Gemini"
+                          :key (getenv "GEMINI_API_KEY") ;; Export this in your .bashrc/.zshrc
+                          :stream t)
+          gptel-model 'gemini-2.5-flash-lite
+          gptel-default-mode 'org-mode
+          gptel-include-reasoning nil
+          gptel-expert-commands t
+
+          gptel-directives
+          '((default     . "You're my assistant. Answer general questions clearly and let me know when I make a mistake.")
+            (programming . "You're a skilled C++ and Linux assistant. Provide solid code, refactor smartly, and explain concepts clearly and concisely.")
+            (writing     . "You're my writing helper. Help me write, proofread, and rephrase emails or paragraphs when I ask.")
+            (chat        . "You're my co-worker. Chat with me on various topics and gently correct my English when needed.")
+            )
+
+          gptel--system-message "You're my assistant. Answer general questions clearly and let me know when I make a mistake."
+          )
+
+    :config
+
+    ;; Use @code-review in the prompt or select the preset from the transient menu.
+    (gptel-make-preset 'programming
+      :description "Preset for programming tasks"
+      :system "You are a highly skilled C++ and Linux development assistant. Your role is to deliver robust code solutions, perform effective refactorings, and provide clear, insightful explanations."
+      :model 'gemini-2.5-flash-lite)
+
+    (gptel-make-preset 'gitcommit
+      :description "Preset for git commit tasks"
+      :system "You generate clear, concise Git commit messages summarizing code changes with context and intent."
+      :use-context 'system
+      :context '("~/.dotfiles/gitconf/gitcommitmsg.txt")
+      :model 'gemini-2.5-flash-lite)
+
+    (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "#  ")
+    (setf (alist-get 'org-mode gptel-response-prefix-alist) "@AI: ")
+    (define-key gptel-mode-map (kbd "C-c C-c") #'gptel-send)
+
+    :hook ((gptel-post-stream-hook . gptel-auto-scroll)
+           (gptel-post-response-functions . gptel-end-of-response)
+           (gptel-mode-hook . gptel-highlight-mode)
+           (gptel-mode-hook . (lambda ()
+                                (add-hook 'after-save-hook #'gptel-save-state nil t))))
+    )
+#+end_src
+
+** LLM augmented tools
+#+begin_src emacs-lisp
+  (use-package gptel-quick
+    :ensure t
+    :elpaca (gptel-quick :host github :repo "karthink/gptel-quick" :branch "master")
+    :after gptel)
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package gptel-magit
+    :load-path "config/external"
+    :after gptel magit
+    :hook (magit-mode . gptel-magit-install)
+    )
+#+end_src
+
+* Misc config
+** Emacs packages' auto-update
+#+begin_src emacs-lisp
+  (use-package auto-package-update
+    :ensure t
+    :custom
+    (auto-package-update-interval 7)
+    (auto-package-update-prompt-before-update nil)
+    (auto-package-update-hide-results t)
+    :config
+    (auto-package-update-maybe))
+#+end_src
+
+** Terminal
+#+begin_src emacs-lisp
+  (use-package vterm
+    :ensure t
+    :custom
+    (vterm-always-compile-module t)
+    (vterm-max-scrollback 10000)
+
+    :config
+    (setq vterm-shell "bash")
+
+    (defun vterm-at-projectile-root ()
+      "Open vterm at the projectile project root."
+      (interactive)
+      (let ((default-directory (projectile-project-root)))
+        (vterm)))
+
+    :bind
+    ("C-<f1>" . vterm-at-projectile-root))
+#+end_src
+
+** Man pages
+#+begin_src emacs-lisp
+  ;;; Make the man page the current buffer
+  (setq Man-notify-method 'aggressive)
+#+end_src
+
+** Persistent scratch buffer
+#+begin_src emacs-lisp
+  (use-package persistent-scratch
+    :ensure t
+    :init
+    (setq persistent-scratch-backup-directory emacs-saves-directory
+          persistent-scratch-save-file (concat emacs-saves-directory "persistent-scratch"))
+    :config
+    (persistent-scratch-setup-default)
+    )
+#+end_src
+
+** E-mail support
+#+begin_src emacs-lisp
+  (use-package mu4e
+    ;; Defer loading until mu4e is explicitly called
+    ;; :ensure t
+    ;; :defer t
+    :commands (mu4e)
+
+    ;; Use :custom for simple variable settings.
+    ;; These are applied *before* the package loads.
+    :custom
+    ;; --- Core Settings ---
+    (mu4e-maildir "~/.mail")
+    (mu4e-get-mail-command "mbsync automn")
+    (mu4e-update-interval 300) ;; Check every 5 minutes
+
+    ;; --- Mail Sending (msmtp) ---
+    (message-send-mail-function 'message-send-mail-with-sendmail)
+    (send-mail-program (executable-find "msmtp"))
+
+    ;; --- Gmail Folder Configuration ---
+    (mu4e-attachment-dir "~/Downloads/")
+    (mu4e-drafts-folder "/oaitelcadi@automncompany.com/Drafts")
+    (mu4e-sent-folder   "/oaitelcadi@automncompany.com/Sent")
+    (mu4e-trash-folder  "/oaitelcadi@automncompany.com/Trash")
+    (mu4e-refile-folder "/oaitelcadi@automncompany.com/All") ;; Archive to 'All Mail'
+
+    ;; --- Set shortcuts ---
+    (mu4e-maildir-shortcuts
+     '( ("/oaitelcadi@automncompany.com/INBOX"   . ?i)
+        ("/oaitelcadi@automncompany.com/Sent Items"    . ?s)
+        ("/oaitelcadi@automncompany.com/Deleted Items"   . ?t)))
+
+    ;; --- Set indentity ---
+    (user-mail-address  "oaitelcadi@automncompany.com")
+    (user-full-name     "Othmane Ait El Cadi")
+    (message-signature  (concat "Othmane\nFounder, Automn\n"))
+
+    ;; --- UI Settings ---
+    (mu4e-main-buffer-query "flag:unread OR (flag:unread AND maildir:/Inbox)")
+
+    ;; :config block runs *after* the package is loaded
+    :config
+    (setenv "MUHOME" "~/.mail/mu/")
+
+    ;; Email view headers
+    (setq mu4e-headers-fields
+          '((:human-date    .  12)
+            (:flags         .   6)
+            (:from-or-to    .  22)
+            (:subject       .  nil)))
+
+    :bind
+    ("C-c m" . mu4e)
+    )
+
+  (use-package smtpmail
+    :ensure nil
+
+    :config
+    (setq sendmail-program "/usr/bin/msmtp"
+          send-mail-function 'smtpmail-send-it
+          message-send-mail-function 'message-send-mail-with-sendmail)
+
+    :hook
+    (message-send-hook . (lambda ()
+                           (unless (yes-or-no-p "Send the email?")
+                             (signal 'quit nil))))
+    )
+
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun my/custom-code-format ()
+    "Format buffer using clang-format for C/C++ modes, otherwise use indent-region."
+    (interactive)
+    (if (derived-mode-p 'c-mode 'c++-mode 'c-ts-mode 'c++-ts-mode)
+        (clang-format-buffer)
+      (indent-region (point-min) (point-max))))
+  ;; Bind it to C-f globally
+  (global-set-key (kbd "C-f") 'my/custom-code-format)
+
+  ;; Revert all changes from current buffer
+  (bind-key "C-<f5>" 'revert-buffer)
+#+end_src

@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: Default C++ Template
+# key: __init__
+# --
+/**
+ * @file `(file-name-nondirectory (buffer-file-name))`
+ * @author Othmane Ait El Cadi
+ * @brief $1
+ */
+
+#include <iostream>
+
+int main(int argc, char *argv[]) {
+    $0
+    return 0;
+}

@@ -1,0 +1,10 @@
+# Ignore everything...
+/*
+/config/custom-vars.el
+
+# Except:
+!.gitignore
+!config.org
+!early-init.el
+!init.el
+!/config/

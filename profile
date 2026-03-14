@@ -31,3 +31,5 @@ export GPGKEY=
 
 # Pandoc alias to use the pandoc docker container
 alias pandoc='docker run --rm  --volume "$(pwd):/data" --user $(id -u):$(id -g) pandoc/minimal'
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"

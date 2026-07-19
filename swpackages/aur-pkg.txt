@@ -2,7 +2,9 @@ amdgpu-pro-oglp
 amf-amdgpu-pro
 downgrade
 gasket-dkms-git
+gnu-netcat
 libva-vdpau-driver
+neofetch
 packup
 pakbak-git
 python-dtlssocket
